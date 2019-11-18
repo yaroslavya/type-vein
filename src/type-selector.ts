@@ -5,7 +5,7 @@ import { Context, WithContext } from "./context";
 import { SelectionSymbol, Selection } from "./selection";
 import { Select } from "./select";
 
-export class TypeSelector<T extends Type, S = {} & Selection<T>> {
+export class TypeSelector<T extends Type, S = Selection<T>> {
     constructor(type: T) {
         if (!Type.is(type)) {
             throw new Error(`expected argument 'type' to be a Type`);
@@ -25,11 +25,11 @@ export class TypeSelector<T extends Type, S = {} & Selection<T>> {
 
     select<C extends Context>(context: C): TypeSelector<T, S & Select<T, WithContext<C, false, any, any>>>;
 
-    select<P extends Property<any, any, true>>(
+    select<P extends Property.Primitive>(
         select: (properties: T) => P
     ): TypeSelector<T, S & Record<P["key"], P>>;
 
-    select<P extends Property<any, any, false>, E>(
+    select<P extends Property.Complex, E>(
         select: (properties: T) => P,
         expand: (selector: TypeSelector<Unbox<P["value"]>>) => TypeSelector<Unbox<P["value"]>, E>
     ): TypeSelector<T, S & Record<P["key"], ReplacePropertyValue<P, E>>>;

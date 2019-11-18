@@ -1,4 +1,4 @@
-import { Primitive, Unbox } from "./lang";
+import { Primitive } from "./lang";
 import { Type } from "./type";
 import { Selection } from "./selection";
 
@@ -8,13 +8,6 @@ export interface Property<K extends string = string, V = any, P = V extends Prim
     primitive: P;
 }
 
-export module Property {
-    export function is(x?: any): x is Property {
-        x = x || {};
-
-        return typeof ((x as Property).key) === "string" && (x as Property).value != null;
-    }
-}
 /**
  * Takes a property P and exchanges its value with what is provided for V.
  */
@@ -53,4 +46,15 @@ export function propertiesOf<T extends Type | Selection>(type: T): Record<string
     }
 
     return fields;
+}
+
+export module Property {
+    export type Primitive<K extends string = string, V = any> = Property<K, V, true>;
+    export type Complex<K extends string = string, V = any> = Property<K, V, false>;
+
+    export function is(x?: any): x is Property {
+        x = x || {};
+
+        return typeof ((x as Property).key) === "string" && (x as Property).value != null;
+    }
 }
