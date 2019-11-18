@@ -1,10 +1,12 @@
 export type Attribute
     = "filterable"
+    | "indexable"
     | "iterable"
     | "unique";
 
 const attributesMap: Record<Attribute, true> = {
     filterable: true,
+    indexable: true,
     iterable: true,
     unique: true
 };
@@ -16,6 +18,7 @@ export function allAttributes(): Attribute[] {
 export type HasAttribute<F extends Attribute> = Record<F, true>;
 
 export type IsFilterable = HasAttribute<"filterable">;
+export type IsIndexable = HasAttribute<"indexable">;
 export type IsIterable = HasAttribute<"iterable">;
 export type IsUnique = HasAttribute<"unique">;
 

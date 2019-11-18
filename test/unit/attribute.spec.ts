@@ -2,7 +2,7 @@ import { Attribute, allAttributes, hasAttribute } from "../../src";
 
 describe("attribute.ts", () => {
     it("allAttributes() should contain all the attributes shipped with entity-space", () => {
-        let expected: Attribute[] = ["filterable", "iterable", "unique"];
+        let expected: Attribute[] = ["filterable", "indexable", "iterable", "unique"];
         let actual = allAttributes();
 
         expected.sort();
