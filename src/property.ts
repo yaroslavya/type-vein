@@ -1,6 +1,7 @@
 import { Primitive } from "./lang";
 import { Type } from "./type";
 import { Selection } from "./selection";
+import { PropertyBuilder } from "./property-builder";
 
 export interface Property<K extends string = string, V = any, P = V extends Primitive ? true : false> {
     key: K;
@@ -57,4 +58,26 @@ export module Property {
 
         return typeof ((x as Property).key) === "string" && (x as Property).value != null;
     }
+
+    export function create<K extends string, V, P extends Property<K, V> = Property<K, V>>(key: K, value: V, b: (builder: PropertyBuilder<K, V>) => PropertyBuilder<K, V, P> = p => p as any): P {
+        return b(new PropertyBuilder(key, value)).build();
+    }
+
+    /**
+     * [note] commented it out for now due to premature user experience optimisation.
+     * for now i'll just always call loadable() when defining a property.
+     */
+    // export function define<K extends string, V, P = Property<K, V>>(key: K, value: V): P & IsLoadable;
+    // export function define<K extends string, V, P extends Property<K, V> = Property<K, V>>(key: K, value: V, b: (builder: PropertyBuilder<K, V>) => PropertyBuilder<K, V, P>): P extends IsLoadable<true, any, any> ? P : P & IsLoadable;
+
+    // export function define(...args: any[]): any {
+    //     let key = args[0] as string;
+    //     let value = args[1];
+
+    //     if (args.length === 2) {
+    //         return new PropertyBuilder(key, value).loadable().build();
+    //     } else {
+    //         return args[2](new PropertyBuilder(key, value).loadable()).build();
+    //     }
+    // }
 }

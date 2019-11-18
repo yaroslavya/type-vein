@@ -1,21 +1,19 @@
-import { Type, Property, InstanceLoader, TypeQuery, Instance, WithContext, TypeSymbol, SelectionSymbol, IsIterable, IsFilterable, IsUnique } from "../../src";
+import { Type, Property, InstanceLoader, TypeQuery, Instance, HasContext, TypeSymbol, SelectionSymbol, IsIterable, IsFilterable, IsUnique } from "../../src";
 
 describe("instance-loader", () => {
     it("should do stuff", () => {
         class AlbumType {
             [TypeSymbol] = Type.createMetadata(AlbumType);
-            name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };
-            releasedAt: Property<"releasedAt", typeof String> = { key: "releasedAt", value: String, primitive: true };
-            songs: Property<"songs", typeof SongType> & IsIterable & WithContext<"loadable"> = {
-                key: "songs", value: SongType, iterable: true, loadable: { nullable: false, omittable: false, voidable: false }, primitive: false
-            };
+            name = Property.create("name", String);
+            releasedAt = Property.create("releasedAt", String);
+            songs = Property.create("songs", SongType, b => b.loadable().iterable());
         }
 
         class SongType {
             [TypeSymbol] = Type.createMetadata(SongType);
-            album: Property<"album", typeof AlbumType> & WithContext<"loadable"> = { key: "album", value: AlbumType, loadable: { nullable: false, omittable: false, voidable: false }, primitive: false };
-            duration: Property<"duration", typeof Number> = { key: "duration", value: Number, primitive: true };
-            name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };
+            album = Property.create("album", AlbumType, b => b.loadable());
+            duration = Property.create("duration", Number, b => b.loadable());
+            name = Property.create("name", String, b => b.loadable());
         }
 
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
@@ -64,53 +62,28 @@ describe("type-query", () => {
         // arrange
         class AlbumType {
             [TypeSymbol] = Type.createMetadata(AlbumType);
-            name: Property<"name", typeof String> & WithContext<"loadable"> & IsFilterable & IsUnique = {
-                key: "name",
-                value: String,
-                filterable: true,
-                loadable: { nullable: false, omittable: false, voidable: false },
-                unique: true,
-                primitive: true
-            };
-
-            releasedAt: Property<"releasedAt", typeof String> & WithContext<"loadable", true, true> & IsFilterable = {
-                key: "releasedAt",
-                value: String,
-                primitive: true,
-                filterable: true,
-                loadable: { nullable: true, omittable: true, voidable: false }
-            };
-
-            songs: Property<"songs", typeof SongType> & WithContext<"loadable"> & IsIterable = {
-                key: "songs", value: SongType, iterable: true,
-                loadable: {} as any,
-                primitive: false
-            };
+            name = Property.create("name", String, b => b.loadable().filterable().unique());
+            releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "omittable", "voidable"]).filterable());
+            songs = Property.create("songs", SongType, b => b.loadable().iterable());
         }
 
         class SongType {
             [TypeSymbol] = Type.createMetadata(SongType);
-            album: Property<"album", typeof AlbumType> & WithContext<"loadable", true> = {
-                key: "album", value: AlbumType, loadable: { nullable: false, omittable: true, voidable: false },
-                primitive: false
-            };
-
-            duration: Property<"duration", typeof Number> & IsFilterable & WithContext<"loadable", false, true> = {
-                key: "duration", value: Number, filterable: true, loadable: { nullable: true, omittable: false, voidable: false },
-                primitive: true
-            };
-
-            name: Property<"name", typeof String> & IsFilterable & WithContext<"loadable"> = { key: "name", value: String, loadable: {} as any, filterable: true, primitive: true };
-
-            bar: Property<"bar", typeof String> & WithContext<"loadable", true, true> = { key: "bar", value: String, loadable: { nullable: true, omittable: true, voidable: false }, primitive: true };
+            album = Property.create("album", AlbumType, b => b.loadable(["omittable"]));
+            duration = Property.create("duration", Number, b => b.loadable(["nullable"]).filterable());
+            name = Property.create("name", String, b => b.loadable().filterable());
         }
-
-        // let testQuery = new TypeQuery(new AlbumType()).select(ts => ts.select(["loadable", "patchable", "unique"])).build();
 
         let typeQuery = new TypeQuery(new AlbumType());
 
         let selectedType = typeQuery
-            .select(s => s.select(x => x.songs, s => s.select(x => x.album, s => s.select(x => x.releasedAt))))
+            .select(s => s
+                .select(x => x.songs, s => s
+                    .select(x => x.album, s => s
+                        .select(x => x.releasedAt)
+                    )
+                )
+            )
             .where(c => c
                 .equals(x => x.name, "foo")
                 .select(x => x.songs, c => c
@@ -132,7 +105,7 @@ describe("type-query", () => {
                 duration: true ? null : 3,
                 name: "foo",
                 album: {
-                    releasedAt: true ? null : "2001"
+                    releasedAt: true ? (true ? null : void 0) : "2001"
                 }
             }]
         };

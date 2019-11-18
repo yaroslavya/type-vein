@@ -6,6 +6,7 @@ export * from "./instance";
 export * from "./instance-loader";
 export * from "./lang";
 export * from "./property";
+export * from "./property-builder";
 export * from "./select";
 export * from "./selection";
 export * from "./type";

@@ -1,7 +1,7 @@
 import { Property, propertiesOf, ReplacePropertyValue } from "./property";
 import { Unbox } from "./lang";
 import { Type } from "./type";
-import { Context, WithContext } from "./context";
+import { Context, HasContext } from "./context";
 import { SelectionSymbol, Selection } from "./selection";
 import { Select } from "./select";
 
@@ -23,7 +23,7 @@ export class TypeSelector<T extends Type, S = Selection<T>> {
     private readonly _type: T;
     private readonly _selected: S;
 
-    select<C extends Context>(context: C): TypeSelector<T, S & Select<T, WithContext<C, false, any, any>>>;
+    select<C extends Context>(context: C): TypeSelector<T, S & Select<T, HasContext<C, false, any, any>>>;
 
     select<P extends Property.Primitive>(
         select: (properties: T) => P

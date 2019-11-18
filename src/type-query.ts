@@ -1,7 +1,7 @@
 import { Type } from "./type";
 import { TypeSelector } from "./type-selector";
 import { CriteraBuilder } from "./criteria-builder";
-import { WithContext } from "./context";
+import { HasContext } from "./context";
 import { Select } from "./select";
 import { Selection } from "./selection";
 
@@ -11,7 +11,7 @@ export type QueriedType<T extends Type, S extends Selection<T>, C extends Criter
         criteria: C;
     };
 
-export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, WithContext<"loadable", false, any, any>>> {
+export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasContext<"loadable", false, any, any>>> {
     constructor(type: T) {
         this._type = type;
         this._selector = new TypeSelector<T, S>(type).select("loadable");

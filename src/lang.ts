@@ -3,6 +3,12 @@
  */
 export type Primitive = typeof Boolean | typeof Number | typeof String;
 
+export module Primitive {
+    export function is<T>(x?: any): x is Primitive {
+        return x === Boolean || x === Number || x === String;
+    }
+}
+
 export type Class = new (...args: any) => any;
 
 /**
