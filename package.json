@@ -6,7 +6,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/kukeiko/entity-space"
+        "url": "https://github.com/kukeiko/type-vein"
     },
     "typings": "./dist/src/index.d.ts",
     "main": "./dist/src/index",
