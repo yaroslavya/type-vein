@@ -6,7 +6,7 @@ export type Context
 /**
  * [todo] naming sucks
  */
-export interface StateValue<O extends boolean = false, N extends boolean = false, V extends boolean = false> {
+export interface ContextValue<O extends boolean = false, N extends boolean = false, V extends boolean = false> {
     /**
      * If the property has to exist when in this state (support for OData $select on primitives).
      */
@@ -23,7 +23,7 @@ export interface StateValue<O extends boolean = false, N extends boolean = false
     voidable: V;
 }
 
-export type WithContext<C extends Context, O extends boolean = false, N extends boolean = false, V extends boolean = false> = Record<C, StateValue<O, N, V>>;
+export type WithContext<C extends Context, O extends boolean = false, N extends boolean = false, V extends boolean = false> = Record<C, ContextValue<O, N, V>>;
 
 export type WidenValueForContext<P, C extends Context, V>
     = (

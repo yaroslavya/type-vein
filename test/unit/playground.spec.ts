@@ -120,10 +120,7 @@ describe("type-query", () => {
             )
             .where("or", c => c
                 .equals(s => s.name, "quak")
-                /**
-                 * [todo] can not yet filter by "releasedAt equals null"
-                 */
-                .select(s => s.songs, s => s.select(t => t.album, s => s.equals(t => t.releasedAt, "2001")))
+                .select(s => s.songs, s => s.select(t => t.album, s => s.equals(t => t.releasedAt, true ? null : "2001")))
             )
             .build()
             ;

@@ -5,7 +5,7 @@ import { WithContext } from "./context";
 import { Select } from "./select";
 import { Selection } from "./selection";
 
-export type QueriedType<T extends Type, S extends Selection<T>, C extends CriteraBuilder<S>>
+export type QueriedType<T extends Type, S extends Selection<T>, C extends CriteraBuilder<S, "loadable">>
     = {
         selected: S;
         criteria: C;
@@ -25,17 +25,17 @@ export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, WithCo
         return this as any;
     }
 
-    where(filter: (criteriaBuilder: CriteraBuilder<S>) => any): this;
-    where(operand: "and" | "or", filter: (criteriaBuilder: CriteraBuilder<S>) => any): this;
+    where(filter: (criteriaBuilder: CriteraBuilder<S, "loadable">) => any): this;
+    where(operand: "and" | "or", filter: (criteriaBuilder: CriteraBuilder<S, "loadable">) => any): this;
 
     where(...args: any[]): this {
         return this;
     }
 
-    build(): QueriedType<T, S, CriteraBuilder<S>> {
+    build(): QueriedType<T, S, CriteraBuilder<S, "loadable">> {
         return {
             selected: this._selector.build(),
-            criteria: {} as CriteraBuilder<S>
+            criteria: {} as CriteraBuilder<S, "loadable">
         };
     }
 }
