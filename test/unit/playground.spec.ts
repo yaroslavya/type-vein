@@ -1,4 +1,4 @@
-import { Type, Property, InstanceLoader, TypeQuery, Instance, WithAttribute, WithContext, TypeSymbol, SelectionSymbol } from "../../src";
+import { Type, Property, InstanceLoader, TypeQuery, Instance, WithContext, TypeSymbol, SelectionSymbol, IsIterable, IsFilterable, IsUnique } from "../../src";
 
 describe("instance-loader", () => {
     it("should do stuff", () => {
@@ -6,7 +6,7 @@ describe("instance-loader", () => {
             [TypeSymbol] = Type.createMetadata(AlbumType);
             name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };
             releasedAt: Property<"releasedAt", typeof String> = { key: "releasedAt", value: String, primitive: true };
-            songs: Property<"songs", typeof SongType> & WithAttribute<"iterable"> & WithContext<"loadable"> = {
+            songs: Property<"songs", typeof SongType> & IsIterable & WithContext<"loadable"> = {
                 key: "songs", value: SongType, iterable: true, loadable: { nullable: false, omittable: false, voidable: false }, primitive: false
             };
         }
@@ -64,7 +64,7 @@ describe("type-query", () => {
         // arrange
         class AlbumType {
             [TypeSymbol] = Type.createMetadata(AlbumType);
-            name: Property<"name", typeof String> & WithContext<"loadable"> & WithAttribute<"filterable"> & WithAttribute<"unique"> = {
+            name: Property<"name", typeof String> & WithContext<"loadable"> & IsFilterable & IsUnique = {
                 key: "name",
                 value: String,
                 filterable: true,
@@ -73,7 +73,7 @@ describe("type-query", () => {
                 primitive: true
             };
 
-            releasedAt: Property<"releasedAt", typeof String> & WithContext<"loadable", true, true> & WithAttribute<"filterable"> = {
+            releasedAt: Property<"releasedAt", typeof String> & WithContext<"loadable", true, true> & IsFilterable = {
                 key: "releasedAt",
                 value: String,
                 primitive: true,
@@ -81,7 +81,7 @@ describe("type-query", () => {
                 loadable: { nullable: true, omittable: true, voidable: false }
             };
 
-            songs: Property<"songs", typeof SongType> & WithContext<"loadable"> & WithAttribute<"iterable"> = {
+            songs: Property<"songs", typeof SongType> & WithContext<"loadable"> & IsIterable = {
                 key: "songs", value: SongType, iterable: true,
                 loadable: {} as any,
                 primitive: false
@@ -95,12 +95,12 @@ describe("type-query", () => {
                 primitive: false
             };
 
-            duration: Property<"duration", typeof Number> & WithAttribute<"filterable"> & WithContext<"loadable", false, true> = {
+            duration: Property<"duration", typeof Number> & IsFilterable & WithContext<"loadable", false, true> = {
                 key: "duration", value: Number, filterable: true, loadable: { nullable: true, omittable: false, voidable: false },
                 primitive: true
             };
 
-            name: Property<"name", typeof String> & WithAttribute<"filterable"> & WithContext<"loadable"> = { key: "name", value: String, loadable: {} as any, filterable: true, primitive: true };
+            name: Property<"name", typeof String> & IsFilterable & WithContext<"loadable"> = { key: "name", value: String, loadable: {} as any, filterable: true, primitive: true };
 
             bar: Property<"bar", typeof String> & WithContext<"loadable", true, true> = { key: "bar", value: String, loadable: { nullable: true, omittable: true, voidable: false }, primitive: true };
         }

@@ -13,15 +13,19 @@ export function allAttributes(): Attribute[] {
     return Object.keys(attributesMap) as Attribute[];
 }
 
-export type WithAttribute<F extends Attribute> = Record<F, true>;
+export type HasAttribute<F extends Attribute> = Record<F, true>;
 
-export function setAttribute<T extends object, A extends Attribute>(property: T, attribute: A): T & WithAttribute<A> {
+export type IsFilterable = HasAttribute<"filterable">;
+export type IsIterable = HasAttribute<"iterable">;
+export type IsUnique = HasAttribute<"unique">;
+
+export function setAttribute<T extends object, A extends Attribute>(property: T, attribute: A): T & HasAttribute<A> {
     (property as any)[attribute] = true;
 
     return property as any;
 }
 
-export function hasAttribute<A extends Attribute>(property: any, attribute: A): property is WithAttribute<A> {
+export function hasAttribute<A extends Attribute>(property: any, attribute: A): property is HasAttribute<A> {
     return property?.[attribute] === true;
 }
 

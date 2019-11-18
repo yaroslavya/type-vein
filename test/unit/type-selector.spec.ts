@@ -1,4 +1,4 @@
-import { Type, Property, WithAttribute, TypeSelector, TypeSymbol, SelectionSymbol } from "../../src";
+import { Type, Property, TypeSelector, TypeSymbol, SelectionSymbol, IsIterable } from "../../src";
 
 describe("type-selector", () => {
     it("should create a selection as expected", () => {
@@ -7,7 +7,7 @@ describe("type-selector", () => {
             [TypeSymbol] = Type.createMetadata(AlbumType);
             name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };
             releasedAt: Property<"releasedAt", typeof String> = { key: "releasedAt", value: String, primitive: true };
-            songs: Property<"songs", typeof SongType> & WithAttribute<"iterable"> = { key: "songs", value: SongType, iterable: true, primitive: false };
+            songs: Property<"songs", typeof SongType> & IsIterable = { key: "songs", value: SongType, iterable: true, primitive: false };
         }
 
         class SongType {

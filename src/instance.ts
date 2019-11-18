@@ -1,9 +1,9 @@
 import { Primitive, Unbox } from "./lang";
 import { Property, OptionalPropertyKeys, RequiredPropertyKeys } from "./property";
-import { WithAttribute } from "./attribute";
+import { IsIterable } from "./attribute";
 import { Context, WithContext, WidenValueForContext } from "./context";
 
-export type BoxPropertyValue<P, V> = P extends WithAttribute<"iterable"> ? V[] : V;
+export type BoxPropertyValue<P, V> = P extends IsIterable ? V[] : V;
 
 export type InstancedValueOfProperty<P extends Property | undefined, C extends Context, V = Exclude<P, undefined>["value"]>
     = undefined extends P

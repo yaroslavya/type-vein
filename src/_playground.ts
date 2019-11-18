@@ -2,7 +2,7 @@ import { Instance, InstancedValueOfProperty } from "./instance";
 import { Type, TypeSymbol } from "./type";
 import { Property, OptionalPropertyKeys, RequiredPropertyKeys, PropertyKeys } from "./property";
 import { WithContext } from "./context";
-import { WithAttribute } from "./attribute";
+import { IsIterable } from "./attribute";
 import { AnySelection, SelectRequiredProperties } from "./select";
 import { SelectionSymbol } from "./selection";
 
@@ -10,7 +10,7 @@ class AlbumType {
     [TypeSymbol] = Type.createMetadata(AlbumType);
     name: Property<"name", typeof String> & WithContext<"loadable"> = null as any;
     releasedAt: Property<"releasedAt", typeof String> = null as any;
-    songs: Property<"songs", typeof SongType> & WithAttribute<"iterable"> & WithContext<"loadable"> = null as any;
+    songs: Property<"songs", typeof SongType> & IsIterable & WithContext<"loadable"> = null as any;
     author: Property<"author", typeof AuthorType> & WithContext<"loadable"> = null as any;
 }
 
