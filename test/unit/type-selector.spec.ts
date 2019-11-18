@@ -4,14 +4,14 @@ describe("type-selector", () => {
     it("should create a selection as expected", () => {
         // arrange
         class AlbumType {
-            [TypeSymbol] = Type.Metadata.create(AlbumType);
+            [TypeSymbol] = Type.createMetadata(AlbumType);
             name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };
             releasedAt: Property<"releasedAt", typeof String> = { key: "releasedAt", value: String, primitive: true };
             songs: Property<"songs", typeof SongType> & WithAttribute<"iterable"> = { key: "songs", value: SongType, iterable: true, primitive: false };
         }
 
         class SongType {
-            [TypeSymbol] = Type.Metadata.create(SongType);
+            [TypeSymbol] = Type.createMetadata(SongType);
             album: Property<"album", typeof AlbumType> = { key: "album", value: AlbumType, primitive: false };
             duration: Property<"duration", typeof Number> = { key: "duration", value: Number, primitive: true };
             name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };

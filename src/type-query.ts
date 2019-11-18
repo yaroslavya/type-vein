@@ -1,8 +1,8 @@
 import { Type } from "./type";
 import { TypeSelector } from "./type-selector";
 import { CriteraBuilder } from "./criteria-builder";
-import { PickProperties } from "./property";
 import { WithContext } from "./context";
+import { Select } from "./select";
 import { Selection } from "./selection";
 
 export type QueriedType<T extends Type, S extends Selection<T>, C extends CriteraBuilder<S>>
@@ -11,17 +11,17 @@ export type QueriedType<T extends Type, S extends Selection<T>, C extends Criter
         criteria: C;
     };
 
-export class TypeQuery<T extends Type, S extends Selection<T> = {} & Selection<T>> {
+export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, WithContext<"loadable", false, any, any>>> {
     constructor(type: T) {
         this._type = type;
-        this._selector = new TypeSelector<T, S>(type);
+        this._selector = new TypeSelector<T, S>(type).select("loadable");
     }
 
     private readonly _type: T;
     private readonly _selector: TypeSelector<T, S>;
 
-    select<O>(select: (selector: TypeSelector<T, S & PickProperties<T, WithContext<"loadable", false, any, any>>>) => TypeSelector<T, O>): TypeQuery<T, S & O> {
-        select(this._selector.select("loadable"));
+    select<O>(select: (selector: TypeSelector<T, S>) => TypeSelector<T, O>): TypeQuery<T, S & O> {
+        select(this._selector);
         return this as any;
     }
 

@@ -1,19 +1,20 @@
-import { Property, WithReplacedValueProperty, DefaultValueOfProperty, propertiesOf, PickProperties } from "./property";
+import { Property, propertiesOf, ReplacePropertyValue } from "./property";
 import { Unbox } from "./lang";
 import { Type } from "./type";
 import { Context, WithContext } from "./context";
 import { SelectionSymbol, Selection } from "./selection";
+import { Select } from "./select";
 
-/**
- * [todo]
- * i added "T extends StaticType", but runtime checks are missing
- */
 export class TypeSelector<T extends Type, S = {} & Selection<T>> {
     constructor(type: T) {
+        if (!Type.is(type)) {
+            throw new Error(`expected argument 'type' to be a Type`);
+        }
+
         this._type = type;
 
         let selectedType: Selection = {
-            [SelectionSymbol]: Selection.Metadata.create(type)
+            [SelectionSymbol]: Selection.createMetadata(type)
         };
 
         this._selected = selectedType as any as S;
@@ -22,25 +23,16 @@ export class TypeSelector<T extends Type, S = {} & Selection<T>> {
     private readonly _type: T;
     private readonly _selected: S;
 
-    select<C extends Context>(context: C): TypeSelector<T, S & PickProperties<T, WithContext<C, false, any, any>>>;
+    select<C extends Context>(context: C): TypeSelector<T, S & Select<T, WithContext<C, false, any, any>>>;
 
-    /**
-     * [todo] force primitives so we can remove DefaultValueOfProperty type
-     */
     select<P extends Property<any, any, true>>(
-        /**
-         * [note]
-         * by not using "PropertiesOf<T>" we can support "find references" @ IDE
-         */
-        // select: (properties: PropertiesOf<T>) => P
         select: (properties: T) => P
-    ): TypeSelector<T, S & WithReplacedValueProperty<P, DefaultValueOfProperty<P>>>;
+    ): TypeSelector<T, S & Record<P["key"], P>>;
 
-    // select<P extends Property & WithAttribute<"expandable">, E>(
     select<P extends Property<any, any, false>, E>(
         select: (properties: T) => P,
         expand: (selector: TypeSelector<Unbox<P["value"]>>) => TypeSelector<Unbox<P["value"]>, E>
-    ): TypeSelector<T, S & WithReplacedValueProperty<P, E>>;
+    ): TypeSelector<T, S & Record<P["key"], ReplacePropertyValue<P, E>>>;
 
     select(...args: any[]): any {
         if (args.length === 1 && typeof args[0] === "string") {

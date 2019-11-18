@@ -3,7 +3,7 @@ import { Type, Property, InstanceLoader, TypeQuery, Instance, WithAttribute, Wit
 describe("instance-loader", () => {
     it("should do stuff", () => {
         class AlbumType {
-            [TypeSymbol] = Type.Metadata.create(AlbumType);
+            [TypeSymbol] = Type.createMetadata(AlbumType);
             name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };
             releasedAt: Property<"releasedAt", typeof String> = { key: "releasedAt", value: String, primitive: true };
             songs: Property<"songs", typeof SongType> & WithAttribute<"iterable"> & WithContext<"loadable"> = {
@@ -12,7 +12,7 @@ describe("instance-loader", () => {
         }
 
         class SongType {
-            [TypeSymbol] = Type.Metadata.create(SongType);
+            [TypeSymbol] = Type.createMetadata(SongType);
             album: Property<"album", typeof AlbumType> & WithContext<"loadable"> = { key: "album", value: AlbumType, loadable: { nullable: false, omittable: false, voidable: false }, primitive: false };
             duration: Property<"duration", typeof Number> = { key: "duration", value: Number, primitive: true };
             name: Property<"name", typeof String> = { key: "name", value: String, primitive: true };
@@ -20,12 +20,12 @@ describe("instance-loader", () => {
 
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
             load(loadable, criteria) {
-                loadable.songs ?.value[SelectionSymbol].type[TypeSymbol].class;
+                loadable.songs?.value[SelectionSymbol].type[TypeSymbol].class;
 
                 new loadable[SelectionSymbol].type[TypeSymbol].class();
                 let metadata = loadable[SelectionSymbol].type[TypeSymbol].class;
                 loadable[SelectionSymbol].type[TypeSymbol].class;
-                loadable.songs ?.value[SelectionSymbol].type;
+                loadable.songs?.value[SelectionSymbol].type;
 
                 for (let k in loadable) {
 
@@ -63,7 +63,7 @@ describe("type-query", () => {
     it("should do stuff", () => {
         // arrange
         class AlbumType {
-            [TypeSymbol] = Type.Metadata.create(AlbumType);
+            [TypeSymbol] = Type.createMetadata(AlbumType);
             name: Property<"name", typeof String> & WithContext<"loadable"> & WithAttribute<"filterable"> & WithAttribute<"unique"> = {
                 key: "name",
                 value: String,
@@ -73,7 +73,13 @@ describe("type-query", () => {
                 primitive: true
             };
 
-            releasedAt: Property<"releasedAt", typeof String> = { key: "releasedAt", value: String, primitive: true };
+            releasedAt: Property<"releasedAt", typeof String> & WithContext<"loadable", true, true> & WithAttribute<"filterable"> = {
+                key: "releasedAt",
+                value: String,
+                primitive: true,
+                filterable: true,
+                loadable: { nullable: true, omittable: true, voidable: false }
+            };
 
             songs: Property<"songs", typeof SongType> & WithContext<"loadable"> & WithAttribute<"iterable"> = {
                 key: "songs", value: SongType, iterable: true,
@@ -83,7 +89,7 @@ describe("type-query", () => {
         }
 
         class SongType {
-            [TypeSymbol] = Type.Metadata.create(SongType);
+            [TypeSymbol] = Type.createMetadata(SongType);
             album: Property<"album", typeof AlbumType> & WithContext<"loadable", true> = {
                 key: "album", value: AlbumType, loadable: { nullable: false, omittable: true, voidable: false },
                 primitive: false
@@ -104,11 +110,7 @@ describe("type-query", () => {
         let typeQuery = new TypeQuery(new AlbumType());
 
         let selectedType = typeQuery
-            .select(s => s
-                // .select("loadable")
-                // .select(x => x.songs, q => q.select("loadable"))
-                // .select(x => x.songs, q => q.select("loadable").select(x => x.name))
-            )
+            .select(s => s.select(x => x.songs, s => s.select(x => x.album, s => s.select(x => x.releasedAt))))
             .where(c => c
                 .equals(x => x.name, "foo")
                 .select(x => x.songs, c => c
@@ -118,6 +120,10 @@ describe("type-query", () => {
             )
             .where("or", c => c
                 .equals(s => s.name, "quak")
+                /**
+                 * [todo] can not yet filter by "releasedAt equals null"
+                 */
+                .select(s => s.songs, s => s.select(t => t.album, s => s.equals(t => t.releasedAt, "2001")))
             )
             .build()
             ;
@@ -127,7 +133,10 @@ describe("type-query", () => {
             name: "susi",
             songs: [{
                 duration: true ? null : 3,
-                name: "foo"
+                name: "foo",
+                album: {
+                    releasedAt: true ? null : "2001"
+                }
             }]
         };
 

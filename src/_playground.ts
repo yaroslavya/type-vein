@@ -1,12 +1,13 @@
 import { Instance, InstancedValueOfProperty } from "./instance";
 import { Type, TypeSymbol } from "./type";
-import { Property, PartialType, OptionalPropertyKeys, RequiredPropertyKeys, PropertyKeys, PickOptionalProperties, PickRequiredProperties } from "./property";
+import { Property, OptionalPropertyKeys, RequiredPropertyKeys, PropertyKeys } from "./property";
 import { WithContext } from "./context";
 import { WithAttribute } from "./attribute";
+import { AnySelection, SelectRequiredProperties } from "./select";
 import { SelectionSymbol } from "./selection";
 
 class AlbumType {
-    [TypeSymbol] = Type.Metadata.create(AlbumType);
+    [TypeSymbol] = Type.createMetadata(AlbumType);
     name: Property<"name", typeof String> & WithContext<"loadable"> = null as any;
     releasedAt: Property<"releasedAt", typeof String> = null as any;
     songs: Property<"songs", typeof SongType> & WithAttribute<"iterable"> & WithContext<"loadable"> = null as any;
@@ -14,18 +15,18 @@ class AlbumType {
 }
 
 class SongType implements Type<typeof SongType> {
-    [TypeSymbol] = Type.Metadata.create(SongType);
+    [TypeSymbol] = Type.createMetadata(SongType);
     index: Property<"index", typeof Number> & WithContext<"loadable"> = null as any;
 }
 
 class AuthorType implements Type<typeof AuthorType> {
-    [TypeSymbol] = Type.Metadata.create(AuthorType);
+    [TypeSymbol] = Type.createMetadata(AuthorType);
     name: Property<"name", typeof String> & WithContext<"loadable"> = null as any;
     album: Property<"album", typeof AlbumType> = null as any;
     bornAt: Property<"releasedAt", typeof String> & WithContext<"loadable"> = null as any;
 }
 
-type AlbumPartialType = PartialType<AlbumType>;
+type AlbumPartialType = AnySelection<AlbumType>;
 
 let albumPartialType: AlbumPartialType = {
     [SelectionSymbol]: { type: new AlbumType() },
@@ -72,7 +73,7 @@ type AlbumTypePropertyKeys = PropertyKeys<AlbumType>;
 //     releasedAt: void 0
 // };
 
-type AlbumPickedRequiredProperties = PickRequiredProperties<AlbumType, WithContext<"loadable">>;
+type AlbumPickedRequiredProperties = SelectRequiredProperties<AlbumType, WithContext<"loadable">>;
 
 // let albumPickedRequiredProperties: AlbumPickedRequiredProperties = {
 //     [TypeMetadataSymbol]: { source: new AlbumType() },
@@ -99,7 +100,7 @@ let instancedIterableTypeValueOfProperty: InstancedValueOfProperty<AlbumType["so
     }
 ];
 
-let partialAlbumTypeInstance: Instance<PartialType<AlbumType>, "loadable"> = {
+let partialAlbumTypeInstance: Instance<AnySelection<AlbumType>, "loadable"> = {
     name: "susi",
     author: {
         name: "foo",
@@ -119,5 +120,5 @@ let albumTypeInstance: Instance<AlbumType, "loadable"> = {
     }]
 };
 
-type X = Instance<PartialType<AlbumType>, "loadable">["songs"];
+type X = Instance<AnySelection<AlbumType>, "loadable">["songs"];
 
