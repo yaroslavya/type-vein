@@ -11,16 +11,16 @@ export type QueriedType<T extends Type, S extends Selection<T>, C extends Criter
         criteria: C;
     };
 
-export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasContext<"loadable", false, any, any>>> {
+export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasContext<"loadable", any, false>>> {
     constructor(type: T) {
         this._type = type;
-        this._selector = new TypeSelector<T, S>(type).select("loadable");
+        this._selector = new TypeSelector(type, "loadable");
     }
 
     private readonly _type: T;
-    private readonly _selector: TypeSelector<T, S>;
+    private readonly _selector: TypeSelector<T, "loadable", S>;
 
-    select<O>(select: (selector: TypeSelector<T, S>) => TypeSelector<T, O>): TypeQuery<T, S & O> {
+    select<O>(select: (selector: TypeSelector<T, "loadable", S>) => TypeSelector<T, "loadable", O>): TypeQuery<T, S & O> {
         select(this._selector);
         return this as any;
     }

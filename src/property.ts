@@ -12,7 +12,8 @@ export interface Property<K extends string = string, V = any, P = V extends Prim
 /**
  * Takes a property P and exchanges its value with what is provided for V.
  */
-export type ReplacePropertyValue<P extends Property, V> = Omit<P, "value"> & { value: V };
+// export type ReplacePropertyValue<P extends Property, V> = Omit<P, "value"> & { value: V };
+export type ReplacePropertyValue<P, V> = Omit<P, "value"> & { value: V };
 
 /**
  * The keys in T that point to a Property optionally extending P and are possibly undefined.
@@ -35,13 +36,13 @@ export type PropertyKeys<T, P = Property>
     = OptionalPropertyKeys<T, P>
     | RequiredPropertyKeys<T, P>;
 
-export function propertiesOf<T extends Type | Selection>(type: T): Record<string, Property> {
+export function propertiesOf<T extends Type | Selection>(type: T, predicate: (p: Property) => boolean = () => true): Record<string, Property> {
     let fields: Record<string, Property> = {};
 
     for (let k in type) {
         let candidate = type[k];
 
-        if (Property.is(candidate)) {
+        if (Property.is(candidate) && predicate(candidate)) {
             fields[k] = candidate;
         }
     }

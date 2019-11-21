@@ -11,11 +11,13 @@ export type InstancedValueOfProperty<P extends Property | undefined, C extends C
     : V extends Primitive ? BoxPropertyValue<P, ReturnType<V>> : BoxPropertyValue<P, Instance<Unbox<V>, C>>;
 
 export type OptionalInstance<T, C extends Context> = {
-    [K in OptionalPropertyKeys<T, HasContext<C, any, any, any>>]?: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C>>;
+    [K in OptionalPropertyKeys<T, HasContext<C, any, any>>]?: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C>>;
 };
 
 export type RequiredInstance<T, C extends Context> = {
-    [K in RequiredPropertyKeys<T, HasContext<C, any, any, any>>]: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C>>;
+    [K in RequiredPropertyKeys<T, HasContext<C, any, any>>]: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C>>;
 };
 
-export type Instance<T, S extends Context> = OptionalInstance<T, S> & RequiredInstance<T, S>;
+export type Instance<T, S extends Context>
+    = OptionalInstance<T, S>
+    & RequiredInstance<T, S>;

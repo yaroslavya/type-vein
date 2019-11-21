@@ -62,14 +62,15 @@ describe("type-query", () => {
         // arrange
         class AlbumType {
             [TypeSymbol] = Type.createMetadata(AlbumType);
-            name = Property.create("name", String, b => b.loadable().filterable().unique());
-            releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "omittable", "voidable"]).filterable());
-            songs = Property.create("songs", SongType, b => b.loadable().iterable());
+            name = Property.create("name", String, b => b.loadable(["voidable"]).filterable().unique());
+            // releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "omittable", "voidable"]).filterable());
+            releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "voidable"]).filterable());
+            songs = Property.create("songs", SongType, b => b.loadable(["voidable"]).iterable());
         }
 
         class SongType {
             [TypeSymbol] = Type.createMetadata(SongType);
-            album = Property.create("album", AlbumType, b => b.loadable(["omittable"]));
+            album = Property.create("album", AlbumType, b => b.loadable(["voidable"]));
             duration = Property.create("duration", Number, b => b.loadable(["nullable"]).filterable());
             name = Property.create("name", String, b => b.loadable().filterable());
         }
@@ -78,6 +79,7 @@ describe("type-query", () => {
 
         let selectedType = typeQuery
             .select(s => s
+                .select(s => s.name)
                 .select(x => x.songs, s => s
                     .select(x => x.album, s => s
                         .select(x => x.releasedAt)
@@ -100,13 +102,17 @@ describe("type-query", () => {
 
 
         let instance: Instance<typeof selectedType["selected"], "loadable"> = {
-            name: "susi",
+            name: "foo",
             songs: [{
                 duration: true ? null : 3,
                 name: "foo",
                 album: {
-                    releasedAt: true ? (true ? null : void 0) : "2001"
+                    releasedAt: "2001"
                 }
+                // album: {
+                //     // releasedAt: true ? (true ? null : void 0) : "2001"
+                //     releasedAt: true ? null : "2001"
+                // }
             }]
         };
 

@@ -37,19 +37,19 @@ export class PropertyBuilder<K extends string, V, P extends Property<K, V> = Pro
     }
 
     creatable<F extends (keyof ContextValue)[] = never[]>(flags?: F)
-        : PropertyBuilder<K, V, P & IsCreatable<IncludesContextValue<F, "omittable">, IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
+        : PropertyBuilder<K, V, P & IsCreatable<IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
         setContext(this._property, "creatable", flags);
         return this as any;
     }
 
     loadable<F extends (keyof ContextValue)[] = never[]>(flags?: F)
-        : PropertyBuilder<K, V, P & IsLoadable<IncludesContextValue<F, "omittable">, IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
+        : PropertyBuilder<K, V, P & IsLoadable<IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
         setContext(this._property, "loadable", flags);
         return this as any;
     }
 
     patchable<F extends (keyof ContextValue)[] = never[]>(flags?: F)
-        : PropertyBuilder<K, V, P & IsPatchable<IncludesContextValue<F, "omittable">, IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
+        : PropertyBuilder<K, V, P & IsPatchable<IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
         setContext(this._property, "patchable", flags);
         return this as any;
     }

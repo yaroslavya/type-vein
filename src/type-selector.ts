@@ -1,38 +1,44 @@
 import { Property, propertiesOf, ReplacePropertyValue } from "./property";
 import { Unbox } from "./lang";
 import { Type } from "./type";
-import { Context, HasContext } from "./context";
+import { Context, HasContext, RemoveContextVoidable } from "./context";
 import { SelectionSymbol, Selection } from "./selection";
 import { Select } from "./select";
 
-export class TypeSelector<T extends Type, S = Selection<T>> {
-    constructor(type: T) {
+export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasContext<C, any, false>>> {
+    constructor(type: T, context: C) {
         if (!Type.is(type)) {
             throw new Error(`expected argument 'type' to be a Type`);
         }
 
         this._type = type;
+        this._context = context;
 
         let selectedType: Selection = {
             [SelectionSymbol]: Selection.createMetadata(type)
         };
 
         this._selected = selectedType as any as S;
+        this.select(context);
     }
 
     private readonly _type: T;
+    private readonly _context: C;
     private readonly _selected: S;
 
-    select<C extends Context>(context: C): TypeSelector<T, S & Select<T, HasContext<C, false, any, any>>>;
+    /**
+     * [todo] should only be called once by ctor and therefore not really exist as a public method
+     */
+    select<C extends Context>(context: C): TypeSelector<T, C, S & Select<T, HasContext<C, any, false>>>;
 
-    select<P extends Property.Primitive>(
+    select<P extends Property.Primitive & HasContext<C, any, true>>(
         select: (properties: T) => P
-    ): TypeSelector<T, S & Record<P["key"], P>>;
+    ): TypeSelector<T, C, S & Record<P["key"], RemoveContextVoidable<P, C>>>;
 
-    select<P extends Property.Complex, E>(
+    select<P extends Property.Complex & HasContext<C, any, any>, E>(
         select: (properties: T) => P,
-        expand: (selector: TypeSelector<Unbox<P["value"]>>) => TypeSelector<Unbox<P["value"]>, E>
-    ): TypeSelector<T, S & Record<P["key"], ReplacePropertyValue<P, E>>>;
+        expand: (selector: TypeSelector<Unbox<P["value"]>, C>) => TypeSelector<Unbox<P["value"]>, C, E>
+    ): TypeSelector<T, C, S & Record<P["key"], ReplacePropertyValue<RemoveContextVoidable<P, C>, E>>>;
 
     select(...args: any[]): any {
         if (args.length === 1 && typeof args[0] === "string") {
@@ -50,8 +56,8 @@ export class TypeSelector<T extends Type, S = Selection<T>> {
         } else if (args.length === 2 && args[0] instanceof Function && args[1] instanceof Function) {
             let property = this._fetchProperty(args[0]);
             let type = this._getExpandableType(property);
-            let expand: (selector: TypeSelector<any>) => TypeSelector<any> = args[1];
-            let expandedType = expand(new TypeSelector(type)).build();
+            let expand: (selector: TypeSelector<any, any>) => TypeSelector<any, any> = args[1];
+            let expandedType = expand(new TypeSelector(type, this._context)).build();
             this._selectProperty(property, expandedType);
         } else {
             throw new Error(`arguments didn't match any overload signature`);

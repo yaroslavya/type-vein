@@ -1,30 +1,49 @@
-// import { Instance, InstancedValueOfProperty } from "./instance";
-// import { Type, TypeSymbol } from "./type";
-// import { Property, OptionalPropertyKeys, RequiredPropertyKeys, PropertyKeys } from "./property";
-// import { HasContext } from "./context";
-// import { IsIterable } from "./attribute";
-// import { AnySelection, SelectRequiredProperties } from "./select";
-// import { SelectionSymbol } from "./selection";
+import { Instance, InstancedValueOfProperty } from "./instance";
+import { Type, TypeSymbol } from "./type";
+import { Property, OptionalPropertyKeys, RequiredPropertyKeys, PropertyKeys } from "./property";
+import { HasContext, IsCreatable, RemoveContextVoidable } from "./context";
+import { IsIterable } from "./attribute";
+import { AnySelection, SelectRequiredProperties, Select } from "./select";
+import { SelectionSymbol } from "./selection";
+import { Unbox } from "./lang";
 
-// class AlbumType {
-//     [TypeSymbol] = Type.createMetadata(AlbumType);
-//     name: Property<"name", typeof String> & HasContext<"loadable"> = null as any;
-//     releasedAt: Property<"releasedAt", typeof String> = null as any;
-//     songs: Property<"songs", typeof SongType> & IsIterable & HasContext<"loadable"> = null as any;
-//     author: Property<"author", typeof AuthorType> & HasContext<"loadable"> = null as any;
-// }
+class AlbumType {
+    [TypeSymbol] = Type.createMetadata(AlbumType);
+    name = Property.create("name", String, b => b.creatable(["voidable"]));
+    releasedAt = Property.create("releasedAt", String, b => b.creatable());
+    songs = Property.create("songs", SongType, b => b.iterable().creatable(["voidable"]));
+    author: Property<"author", typeof AuthorType> & HasContext<"loadable"> = null as any;
+}
 
-// class SongType implements Type<typeof SongType> {
-//     [TypeSymbol] = Type.createMetadata(SongType);
-//     index: Property<"index", typeof Number> & HasContext<"loadable"> = null as any;
-// }
+class SongType implements Type<typeof SongType> {
+    [TypeSymbol] = Type.createMetadata(SongType);
+    index = Property.create("index", Number, b => b.creatable(["nullable"]));
+}
 
-// class AuthorType implements Type<typeof AuthorType> {
-//     [TypeSymbol] = Type.createMetadata(AuthorType);
-//     name: Property<"name", typeof String> & HasContext<"loadable"> = null as any;
-//     album: Property<"album", typeof AlbumType> = null as any;
-//     bornAt: Property<"releasedAt", typeof String> & HasContext<"loadable"> = null as any;
-// }
+class AuthorType implements Type<typeof AuthorType> {
+    [TypeSymbol] = Type.createMetadata(AuthorType);
+    name: Property<"name", typeof String> & HasContext<"loadable"> = null as any;
+    album: Property<"album", typeof AlbumType> = null as any;
+    bornAt: Property<"releasedAt", typeof String> & HasContext<"loadable"> = null as any;
+}
+
+// let instance: Instance<Select<AlbumType, IsCreatable<any, false>>, "creatable"> = {
+// let instance: Instance<AnySelection<AlbumType> & Select<AlbumType>, "creatable"> = {
+let anyInstance: Instance<AnySelection<AlbumType>, "creatable"> = {
+    releasedAt: true ? void 0 : "2001",
+    name: true ? void 0 : "foo",
+    songs: [
+        {
+            index: 3
+        }
+    ]
+};
+
+let creatableInstance: Instance<AlbumType, "creatable"> = {
+    name: true ? void 0 : "foo",
+    releasedAt: "2001",
+    songs: void 0
+};
 
 // type AlbumPartialType = AnySelection<AlbumType>;
 

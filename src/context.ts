@@ -1,44 +1,41 @@
+import { Property } from "./property";
+
 export type Context
     = "creatable"
     | "loadable"
     | "patchable";
 
-/**
- * [todo] naming sucks
- */
-export interface ContextValue<O extends boolean = false, N extends boolean = false, V extends boolean = false> {
+export interface ContextValue<N extends boolean = false, V extends boolean = false> {
     /**
-     * If the property has to exist when in this state (support for OData $select on primitives).
-     */
-    omittable: O;
-
-    /**
-     * If the value of a property in this state can be set to null.
+     * If the value of this property in this context can be set to null.
      */
     nullable: N;
 
     /**
-     * If the value of a property in this state can be set to undefined.
+     * If this property is required in this context.
      */
     voidable: V;
 }
 
-export type HasContext<C extends Context, O extends boolean = false, N extends boolean = false, V extends boolean = false> = Record<C, ContextValue<O, N, V>>;
+export type HasContext<C extends Context, N extends boolean = false, V extends boolean = false> = Record<C, ContextValue<N, V>>;
 
-export type IsCreatable<O extends boolean = false, N extends boolean = false, V extends boolean = false>
-    = HasContext<"creatable", O, N, V>;
+export type IsCreatable<N extends boolean = false, V extends boolean = false>
+    = HasContext<"creatable", N, V>;
 
-export type IsLoadable<O extends boolean = false, N extends boolean = false, V extends boolean = false>
-    = HasContext<"loadable", O, N, V>;
+export type IsLoadable<N extends boolean = false, V extends boolean = false>
+    = HasContext<"loadable", N, V>;
 
-export type IsPatchable<O extends boolean = false, N extends boolean = false, V extends boolean = false>
-    = HasContext<"patchable", O, N, V>;
+export type IsPatchable<N extends boolean = false, V extends boolean = false>
+    = HasContext<"patchable", N, V>;
+
+// export type RemoveContextVoidable<P extends Property & HasContext<C, any, any>, C extends Context>
+export type RemoveContextVoidable<P extends HasContext<C, any, any>, C extends Context>
+    = Omit<P, C> & HasContext<C, P[C]["nullable"], false>;
 
 export function setContext<T extends object, C extends Context, F extends (keyof ContextValue)[] = never[]>(property: T, context: C, flags?: F)
-    : HasContext<C, IncludesContextValue<F, "omittable">, IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">> {
-    let ctx: ContextValue<any, any, any> = {
+    : HasContext<C, IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">> {
+    let ctx: ContextValue<any, any> = {
         nullable: !!flags?.includes("nullable"),
-        omittable: !!flags?.includes("omittable"),
         voidable: !!flags?.includes("voidable")
     };
 
@@ -47,15 +44,21 @@ export function setContext<T extends object, C extends Context, F extends (keyof
     return property as any;
 }
 
-/**
- * [todo] better naming
- */
+export function hasContext<C extends Context>(property: any, context: C): property is HasContext<C> {
+    return typeof (property?.[context]) === "object";
+}
+
 export type IncludesContextValue<T extends string[], A extends keyof ContextValue> = undefined extends T ? false : A extends T[number] ? true : false;
 
+/**
+ * [note] it is important to manually type out all the combinations
+ * "nullable" and "voidable" in order to improve the type hinting
+ * provided by TypeScript when assigning values to instances
+ */
 export type WidenValueForContext<P, C extends Context, V>
     = (
-        P extends HasContext<C, any, true, true> ? V | null | undefined
-        : P extends HasContext<C, any, true, false> ? V | null
-        : P extends HasContext<C, any, false, true> ? V | undefined
+        P extends HasContext<C, true, true> ? V | null | undefined
+        : P extends HasContext<C, true, false> ? V | null
+        : P extends HasContext<C, false, true> ? V | undefined
         : V
     );
