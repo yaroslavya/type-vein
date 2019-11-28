@@ -3,11 +3,14 @@ import { Type } from "./type";
 import { Selection } from "./selection";
 import { PropertyBuilder } from "./property-builder";
 
-export interface Property<K extends string = string, V = any, P = V extends Primitive ? true : false> {
+export interface Property<K extends string = string, V = any, A extends string = K, P = V extends Primitive ? true : false> {
+    alias: A;
     key: K;
-    value: V;
     primitive: P;
+    value: V;
 }
+
+export type AliasOf<P> = P extends Property ? P["alias"] : never;
 
 /**
  * Takes a property P and exchanges its value with what is provided for V.
@@ -18,23 +21,23 @@ export type ReplacePropertyValue<P, V> = Omit<P, "value"> & { value: V };
 /**
  * The keys in T that point to a Property optionally extending P and are possibly undefined.
  */
-export type OptionalPropertyKeys<T, P = Property> = Exclude<({
-    [K in keyof T]: undefined extends T[K] ? (T[K] extends (Property & P) | undefined ? K : never) : never;
+export type OptionalPropertyKeys<T, P = Property, A extends boolean = false> = Exclude<({
+    [K in keyof T]: undefined extends T[K] ? (T[K] extends (Property & P) | undefined ? A extends true ? AliasOf<T[K]> : K : never) : never;
 })[keyof T], undefined>;
 
 /**
  * The keys in T that point to a Property optionally extending P and are defined.
  */
-export type RequiredPropertyKeys<T, P = Property> = Exclude<({
-    [K in keyof T]: T[K] extends (Property & P) ? K : never;
+export type RequiredPropertyKeys<T, P = Property, A extends boolean = false> = Exclude<({
+    [K in keyof T]: T[K] extends (Property & P) ? A extends true ? AliasOf<T[K]> : K : never;
 })[keyof T], undefined>;
 
 /**
  * The keys in T that point to a Property optionally extending P and are either undefined or defined.
  */
-export type PropertyKeys<T, P = Property>
-    = OptionalPropertyKeys<T, P>
-    | RequiredPropertyKeys<T, P>;
+export type PropertyKeys<T, P = Property, A extends boolean = false>
+    = OptionalPropertyKeys<T, P, A>
+    | RequiredPropertyKeys<T, P, A>;
 
 export function propertiesOf<T extends Type | Selection>(type: T, predicate: (p: Property) => boolean = () => true): Record<string, Property> {
     let fields: Record<string, Property> = {};
@@ -51,8 +54,8 @@ export function propertiesOf<T extends Type | Selection>(type: T, predicate: (p:
 }
 
 export module Property {
-    export type Primitive<K extends string = string, V = any> = Property<K, V, true>;
-    export type Complex<K extends string = string, V = any> = Property<K, V, false>;
+    export type Primitive<K extends string = string, V = any, A extends string = K> = Property<K, V, A, true>;
+    export type Complex<K extends string = string, V = any, A extends string = K> = Property<K, V, A, false>;
 
     export function is(x?: any): x is Property {
         x = x || {};
@@ -60,8 +63,10 @@ export module Property {
         return typeof ((x as Property).key) === "string" && (x as Property).value != null;
     }
 
-    export function create<K extends string, V, P extends Property<K, V> = Property<K, V>>(key: K, value: V, b: (builder: PropertyBuilder<K, V>) => PropertyBuilder<K, V, P> = p => p as any): P {
-        return b(new PropertyBuilder(key, value)).build();
+    export function create<K extends string, V, P extends Property<K, V> = Property<K, V>>(key: K, value: V, b?: (builder: PropertyBuilder<K, V>) => PropertyBuilder<K, V, K, P>): P;
+    export function create<K extends string, V, A extends string, P extends Property<K, V, A> = Property<K, V, A>>(key: K, value: V, alias: A, b?: (builder: PropertyBuilder<K, V, A>) => PropertyBuilder<K, V, A, P>): P;
+    export function create(...args: any[]): any {
+        // return b(new PropertyBuilder(key, value)).build();
     }
 
     /**

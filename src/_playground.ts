@@ -1,18 +1,21 @@
-import { Instance, InstancedValueOfProperty } from "./instance";
+import { Instance, InstancedValueOfProperty, AliasedInstance, AliasedRequiredInstance, AliasedOptionalInstance, PropertyAliased, KeyOfPropertyAliased } from "./instance";
+// import { Selection } from "./selection";
 import { Type, TypeSymbol } from "./type";
-import { Property, OptionalPropertyKeys, RequiredPropertyKeys, PropertyKeys } from "./property";
-import { HasContext, IsCreatable, RemoveContextVoidable } from "./context";
-import { IsIterable } from "./attribute";
-import { AnySelection, SelectRequiredProperties, Select } from "./select";
-import { SelectionSymbol } from "./selection";
-import { Unbox } from "./lang";
+import { Property, OptionalPropertyKeys, RequiredPropertyKeys, PropertyKeys, ReplacePropertyValue, AliasOf } from "./property";
+import { HasContext, IsCreatable, RemoveContextVoidable, IsLoadable } from "./context";
+import { IsIterable, HasAttribute } from "./attribute";
+import { SelectPartial, SelectRequiredProperties, Select } from "./select";
+import { SelectionSymbol, Selection } from "./selection";
+import { Unbox, Primitive } from "./lang";
 
 class AlbumType {
     [TypeSymbol] = Type.createMetadata(AlbumType);
-    name = Property.create("name", String, b => b.creatable(["voidable"]));
-    releasedAt = Property.create("releasedAt", String, b => b.creatable());
-    songs = Property.create("songs", SongType, b => b.iterable().creatable(["voidable"]));
-    author: Property<"author", typeof AuthorType> & HasContext<"loadable"> = null as any;
+    // name = Property.create("name", String, b => b.creatable(["voidable"]).loadable().aliased("Name"));
+    name = Property.create("name", String, "Name", b => b.creatable(["voidable"]).loadable());
+    releasedAt = Property.create("releasedAt", String, b => b.creatable().loadable());
+    // songs = Property.create("songs", SongType, b => b.iterable().creatable(["voidable"]));
+    songs = Property.create("songs", SongType, b => b.iterable().creatable([]).loadable());
+    author = Property.create("author", AuthorType, "Author", b => b.loadable().creatable(["voidable"]));
 }
 
 class SongType implements Type<typeof SongType> {
@@ -22,14 +25,47 @@ class SongType implements Type<typeof SongType> {
 
 class AuthorType implements Type<typeof AuthorType> {
     [TypeSymbol] = Type.createMetadata(AuthorType);
-    name: Property<"name", typeof String> & HasContext<"loadable"> = null as any;
+    name = Property.create("name", String, "Name", b => b.loadable().creatable());
     album: Property<"album", typeof AlbumType> = null as any;
     bornAt: Property<"releasedAt", typeof String> & HasContext<"loadable"> = null as any;
 }
 
+
+let larifari: AliasedInstance<AlbumType, "creatable"> = {
+    Name: void 0 || "foo",
+    releasedAt: "2001",
+    songs: [],
+    Author: void 0 || {
+        Name: "foo"
+    }
+};
+
+// type SerializablePropertyValue<P extends Property & IsSerializable> = P["value"] extends Primitive ?
+
+type X = SelectPartial<AlbumType, IsLoadable<any, false> | Property<any, any, any, false>>;
+
+
+// let foo: Instance<SelectPartial<AlbumType, IsCreatable<any, true> | Property<any, any, false>>, "creatable"> = {
+let foo: Instance<SelectPartial<AlbumType, IsCreatable<any, true> & Property<any, any, any, false>>, "creatable"> = {
+
+    // releasedAt: true ? void 0 : "2001",
+    // name: true ? void 0 : "foo",
+
+    // songs: [
+    //     {
+
+    //     }
+    // ]
+    // songs: [
+    //     {
+    //         index: 3
+    //     }
+    // ]
+};
+
 // let instance: Instance<Select<AlbumType, IsCreatable<any, false>>, "creatable"> = {
 // let instance: Instance<AnySelection<AlbumType> & Select<AlbumType>, "creatable"> = {
-let anyInstance: Instance<AnySelection<AlbumType>, "creatable"> = {
+let anyInstance: Instance<SelectPartial<AlbumType>, "creatable"> = {
     releasedAt: true ? void 0 : "2001",
     name: true ? void 0 : "foo",
     songs: [
@@ -39,10 +75,14 @@ let anyInstance: Instance<AnySelection<AlbumType>, "creatable"> = {
     ]
 };
 
+
 let creatableInstance: Instance<AlbumType, "creatable"> = {
     name: true ? void 0 : "foo",
     releasedAt: "2001",
-    songs: void 0
+    songs: [],
+    author: {
+        name: "foo"
+    }
 };
 
 // type AlbumPartialType = AnySelection<AlbumType>;
