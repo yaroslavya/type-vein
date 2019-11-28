@@ -25,21 +25,26 @@ export type SelectRequiredProperties<T extends Type, P = Property> = {
     [K in RequiredPropertyKeys<T, P>]: SelectedRequiredProperty<T[K], P>
 };
 
+/**
+ * For a given type, take all properties that extend P. This is applied recursively onto expanded types.
+ */
 export type Select<T extends Type, P = Property>
     = Selection<T>
     & SelectOptionalProperties<T, P>
     & SelectRequiredProperties<T, P>;
 
-
-export type AnySelectionProperty<P extends Property>
+ /**
+  * A property that is undefined. If it points to a type (instead of a primitive), the type's properties can be undefined as well.
+  */
+export type SelectedPartialProperty<P extends Property>
     = P["value"] extends Primitive ? P | undefined
-    : ReplacePropertyValue<P, AnySelection<Unbox<P["value"]>>> | undefined;
+    : ReplacePropertyValue<P, SelectPartial<Unbox<P["value"]>>> | undefined;
 
 /**
 * A type where any of its properties and those of expandable types can be undefined.
 */
-export type AnySelection<T extends Type>
+export type SelectPartial<T extends Type, P = Property>
     = Selection<T>
     & {
-        [K in PropertyKeys<T>]: AnySelectionProperty<T[K]>;
+        [K in PropertyKeys<T, P>]: SelectedPartialProperty<T[K]>;
     };

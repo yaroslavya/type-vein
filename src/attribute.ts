@@ -9,7 +9,7 @@ export interface Attributes {
 
 export type Attribute = keyof Attributes;
 export type HasAttribute<A extends Attribute> = Record<A, Attributes[A]>;
-export type IncludesAttribute<T extends string[], A extends Attribute> = undefined extends T ? false : A extends T[number] ? true : false;
+
 export type IsFilterable = HasAttribute<"filterable">;
 export type IsIndexable = HasAttribute<"indexable">;
 export type IsIterable = HasAttribute<"iterable">;

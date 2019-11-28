@@ -1,5 +1,8 @@
 import { Property } from "./property";
 
+/**
+ * [todo] maybe rename to Context.Key and rename ContextValue to Context 
+ */
 export type Context
     = "creatable"
     | "loadable"

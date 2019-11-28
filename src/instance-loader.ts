@@ -1,8 +1,9 @@
 import { Type } from "./type";
 import { Instance } from "./instance";
 import { CriteriaForType } from "./criteria";
-import { AnySelection } from "./select";
+import { SelectPartial } from "./select";
+import { IsLoadable } from "./context";
 
 export interface InstanceLoader<T extends Type> {
-    load(loadable: AnySelection<T>, criteria: CriteriaForType<T>[]): Map<string | number, Instance<AnySelection<T>, "loadable">>;
+    load(loadable: SelectPartial<T, IsLoadable<any, true>>, criteria: CriteriaForType<T>[]): Map<string | number, Instance<SelectPartial<T>, "loadable">>;
 }
