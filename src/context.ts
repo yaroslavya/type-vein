@@ -1,4 +1,7 @@
-import { Property } from "./property";
+import { Property, ReplacePropertyValue, PropertyKeys } from "./property";
+import { Primitive, Unbox } from "./lang";
+import { Type } from "./type";
+import { Selection } from "./selection";
 
 /**
  * [todo] maybe rename to Context.Key and rename ContextValue to Context 
@@ -20,7 +23,7 @@ export interface ContextValue<N extends boolean = false, V extends boolean = fal
     voidable: V;
 }
 
-export type HasContext<C extends Context, N extends boolean = false, V extends boolean = false> = Record<C, ContextValue<N, V>>;
+export type HasContext<C extends Context, N extends boolean = any, V extends boolean = any> = Record<C, ContextValue<N, V>>;
 
 export type IsCreatable<N extends boolean = false, V extends boolean = false>
     = HasContext<"creatable", N, V>;
@@ -31,9 +34,8 @@ export type IsLoadable<N extends boolean = false, V extends boolean = false>
 export type IsPatchable<N extends boolean = false, V extends boolean = false>
     = HasContext<"patchable", N, V>;
 
-// export type RemoveContextVoidable<P extends Property & HasContext<C, any, any>, C extends Context>
-export type RemoveContextVoidable<P extends HasContext<C, any, any>, C extends Context>
-    = Omit<P, C> & HasContext<C, P[C]["nullable"], false>;
+export type ChangeContextVoidable<P extends HasContext<C, any, any>, C extends Context, B extends boolean>
+    = Omit<P, C> & HasContext<C, P[C]["nullable"], B>;
 
 export function setContext<T extends object, C extends Context, F extends (keyof ContextValue)[] = never[]>(property: T, context: C, flags?: F)
     : HasContext<C, IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">> {
@@ -55,7 +57,7 @@ export type IncludesContextValue<T extends string[], A extends keyof ContextValu
 
 /**
  * [note] it is important to manually type out all the combinations
- * "nullable" and "voidable" in order to improve the type hinting
+ * "nullable" and "voidable" in order to simplify the type hinting
  * provided by TypeScript when assigning values to instances
  */
 export type WidenValueForContext<P, C extends Context, V>
@@ -65,3 +67,16 @@ export type WidenValueForContext<P, C extends Context, V>
         : P extends HasContext<C, false, true> ? V | undefined
         : V
     );
+
+export type PickedVoidableProperty<P extends Property & HasContext<C, any, any>, C extends Context>
+    = P["value"] extends Primitive ? P[C]["voidable"] extends true ? ChangeContextVoidable<P, C, boolean> : P
+    : ReplacePropertyValue<P[C]["voidable"] extends true ? ChangeContextVoidable<P, C, boolean> : P, PickedVoidables<Unbox<P["value"]>, C>>;
+
+/**
+* A type where any of its properties and those of expandable types can be undefined.
+*/
+export type PickedVoidables<T extends Type, C extends Context>
+    = Selection<T>
+    & {
+        [K in PropertyKeys<T, HasContext<C, any, any>>]: PickedVoidableProperty<T[K], C>;
+    };

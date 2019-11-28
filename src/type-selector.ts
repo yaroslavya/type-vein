@@ -1,7 +1,7 @@
 import { Property, propertiesOf, ReplacePropertyValue } from "./property";
 import { Unbox } from "./lang";
 import { Type } from "./type";
-import { Context, HasContext, RemoveContextVoidable } from "./context";
+import { Context, HasContext, ChangeContextVoidable } from "./context";
 import { SelectionSymbol, Selection } from "./selection";
 import { Select } from "./select";
 
@@ -33,12 +33,12 @@ export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasCo
 
     select<P extends Property.Primitive & HasContext<C, any, true>>(
         select: (properties: T) => P
-    ): TypeSelector<T, C, S & Record<P["key"], RemoveContextVoidable<P, C>>>;
+    ): TypeSelector<T, C, S & Record<P["key"], ChangeContextVoidable<P, C, false>>>;
 
     select<P extends Property.Complex & HasContext<C, any, any>, E>(
         select: (properties: T) => P,
         expand: (selector: TypeSelector<Unbox<P["value"]>, C>) => TypeSelector<Unbox<P["value"]>, C, E>
-    ): TypeSelector<T, C, S & Record<P["key"], ReplacePropertyValue<RemoveContextVoidable<P, C>, E>>>;
+    ): TypeSelector<T, C, S & Record<P["key"], ReplacePropertyValue<ChangeContextVoidable<P, C, false>, E>>>;
 
     select(...args: any[]): any {
         if (args.length === 1 && typeof args[0] === "string") {

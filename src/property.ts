@@ -19,25 +19,16 @@ export type AliasOf<P> = P extends Property ? P["alias"] : never;
 export type ReplacePropertyValue<P, V> = Omit<P, "value"> & { value: V };
 
 /**
- * The keys in T that point to a Property optionally extending P and are possibly undefined.
+ * The keys in T that point to a Property optionally extending P.
  */
-export type OptionalPropertyKeys<T, P = Property, A extends boolean = false> = Exclude<({
-    [K in keyof T]: undefined extends T[K] ? (T[K] extends (Property & P) | undefined ? A extends true ? AliasOf<T[K]> : K : never) : never;
-})[keyof T], undefined>;
-
-/**
- * The keys in T that point to a Property optionally extending P and are defined.
- */
-export type RequiredPropertyKeys<T, P = Property, A extends boolean = false> = Exclude<({
+export type PropertyKeys<T, P = Property, A extends boolean = false> = Exclude<({
     [K in keyof T]: T[K] extends (Property & P) ? A extends true ? AliasOf<T[K]> : K : never;
 })[keyof T], undefined>;
 
-/**
- * The keys in T that point to a Property optionally extending P and are either undefined or defined.
- */
-export type PropertyKeys<T, P = Property, A extends boolean = false>
-    = OptionalPropertyKeys<T, P, A>
-    | RequiredPropertyKeys<T, P, A>;
+export type KeyOfPropertyAliased<T, A extends string> = { [K in keyof T]: T[K] extends Property & { alias: A } ? K : never; }[keyof T];
+
+export type PropertyAliased<T, A extends string>
+    = T[KeyOfPropertyAliased<T, A>] extends Property ? T[KeyOfPropertyAliased<T, A>] : never;
 
 export function propertiesOf<T extends Type | Selection>(type: T, predicate: (p: Property) => boolean = () => true): Record<string, Property> {
     let fields: Record<string, Property> = {};
