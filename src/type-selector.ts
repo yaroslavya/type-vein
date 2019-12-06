@@ -1,11 +1,11 @@
 import { Property, propertiesOf, ReplacePropertyValue } from "./property";
-import { Unbox } from "./lang";
+import { Unbox, Primitive } from "./lang";
 import { Type } from "./type";
-import { Context, HasContext, ChangeContextVoidable } from "./context";
+import { Context, HasContext, ChangeContextVoidable, hasContext } from "./context";
 import { SelectionSymbol, Selection } from "./selection";
 import { Select } from "./select";
 
-export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasContext<C>>> {
+export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasContext<C> & Property.Primitive>> {
     constructor(type: T, context: C) {
         if (!Type.is(type)) {
             throw new Error(`expected argument 'type' to be a Type`);
@@ -14,11 +14,9 @@ export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasCo
         this._type = type;
         this._context = context;
 
-        /**
-         * [todo] copy over all properties of T
-         */
-        let selectedType: Selection = {
-            [SelectionSymbol]: Selection.createMetadata(type)
+        let selectedType: Selection & Record<string, Property> = {
+            [SelectionSymbol]: Selection.createMetadata(type),
+            ...propertiesOf(type, p => Property.isPrimitive(p) && hasContext(p, context))
         };
 
         this._selected = selectedType as any as S;
@@ -39,9 +37,32 @@ export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasCo
 
     select(...args: any[]): any {
         if (args.length === 1 && args[0] instanceof Function) {
-            this._selectProperty(this._fetchProperty(args[0]));
+            let property = this._fetchProperty(args[0]);
+
+            if (!Property.isPrimitive(property)) {
+                throw new Error(`expected property '${property.key}' to be primitive`);
+            }
+
+            if (!hasContext(property, this._context)) {
+                throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
+            }
+
+            if (property[this._context].voidable === false) {
+                throw new Error(`expected property '${property.key}' to be voidable for context '${this._context}'`);
+            }
+
+            this._selectProperty(property);
         } else if (args.length === 2 && args[0] instanceof Function && args[1] instanceof Function) {
             let property = this._fetchProperty(args[0]);
+
+            if (!Property.isComplex(property)) {
+                throw new Error(`expected property '${property.key}' to be complex`);
+            }
+
+            if (!hasContext(property, this._context)) {
+                throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
+            }
+
             let type = this._getExpandableType(property);
             let expand: (selector: TypeSelector<any, any>) => TypeSelector<any, any> = args[1];
             let expandedType = expand(new TypeSelector(type, this._context)).build();
@@ -54,23 +75,27 @@ export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasCo
     }
 
     private _fetchProperty(selectFromType: (type: T) => Property): Property {
-        return selectFromType(this._type);
+        let property = selectFromType(this._type);
+
+        if (!Property.is(property)) {
+            throw new Error(`expected property selector to return a property, got '${property}' instead`);
+        }
+
+        return property;
     }
 
     private _getExpandableType(property: Property): Type {
-        if (property.primitive) {
-            throw new Error(`did not expect property '${property.key}' to be a primitive`);
-        }
-
         return property.value instanceof Function ? new property.value() : property.value;
     }
 
-    private _selectProperty(property: Property, newValue?: any): void {
+    private _selectProperty(property: Property & HasContext<C>, newValue?: any): void {
         let copy = { ...property };
 
         if (newValue !== void 0) {
             copy.value = newValue;
         }
+
+        copy[this._context].voidable = false;
 
         (this._selected as any)[property.key] = copy;
     }

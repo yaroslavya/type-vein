@@ -46,7 +46,16 @@ export function propertiesOf<T extends Type | Selection>(type: T, predicate: (p:
 
 export module Property {
     export type Primitive<K extends string = string, V = any, A extends string = K> = Property<K, V, A, true>;
+
+    export function isPrimitive(p: any): p is Primitive {
+        return is(p) && p.primitive === true;
+    }
+
     export type Complex<K extends string = string, V = any, A extends string = K> = Property<K, V, A, false>;
+
+    export function isComplex(p: any): p is Complex {
+        return is(p) && p.primitive === false;
+    }
 
     export function is(x?: any): x is Property {
         x = x || {};
