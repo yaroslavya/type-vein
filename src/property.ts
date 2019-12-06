@@ -57,7 +57,29 @@ export module Property {
     export function create<K extends string, V, P extends Property<K, V> = Property<K, V>>(key: K, value: V, b?: (builder: PropertyBuilder<K, V>) => PropertyBuilder<K, V, K, P>): P;
     export function create<K extends string, V, A extends string, P extends Property<K, V, A> = Property<K, V, A>>(key: K, value: V, alias: A, b?: (builder: PropertyBuilder<K, V, A>) => PropertyBuilder<K, V, A, P>): P;
     export function create(...args: any[]): any {
-        // return b(new PropertyBuilder(key, value)).build();
+        let key: string;
+        /**
+         * [todo] proper type (Primitive | Type) & arg type validation
+         */
+        let value: any;
+        let alias: string;
+        let build: (builder: PropertyBuilder<any, any>) => PropertyBuilder<any, any>;
+
+        if (args.length >= 3 && typeof (args[0]) === "string" && typeof (args[2]) === "string") {
+            key = args[0];
+            value = args[1];
+            alias = args[2];
+            build = typeof (args[3]) === "function" ? args[3] : (builder => builder);
+        } else if (args.length >= 2) {
+            key = args[0];
+            value = args[1];
+            alias = key;
+            build = typeof (args[2]) === "function" ? args[2] : (builder => builder);
+        } else {
+            throw new Error(`arguments didn't match any overload signature`);
+        }
+
+        return build(new PropertyBuilder(key, value, alias)).build();
     }
 
     /**
