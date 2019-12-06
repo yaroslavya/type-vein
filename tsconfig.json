@@ -12,7 +12,6 @@
         "noImplicitThis": true,
         "strict": true,
         "lib": [
-            "dom",
             "scripthost",
             "es2015",
             "es2016.array.include"
