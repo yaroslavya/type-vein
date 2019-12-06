@@ -7,6 +7,13 @@ describe("playground", () => {
             name = Property.create("name", String, b => b.loadable(["voidable"]));
             releasedAt = Property.create("releasedAt", String, b => b.loadable());
             songs = Property.create("songs", SongType, b => b.loadable().iterable());
+            artist = Property.create("songs", ArtistType, b => b.loadable(["voidable"]).iterable());
+        }
+
+        class ArtistType {
+            [TypeSymbol] = Type.createMetadata(ArtistType);
+            name = Property.create("name", String, b => b.loadable());
+            age = Property.create("age", Number, b => b.loadable(["voidable"]));
         }
 
         class SongType {
@@ -18,10 +25,19 @@ describe("playground", () => {
 
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
             load(loadable, criteria) {
-                loadable.name.loadable;
-                loadable.songs.value.album;
+                // expected to be false
+                loadable.releasedAt.loadable.voidable;
+                loadable.songs.loadable.voidable;
+                loadable.songs.value.duration.loadable.voidable;
+                loadable.artist?.value.name.loadable.voidable;
 
-                loadable.songs.value[SelectionSymbol].type[TypeSymbol].class;
+                // expected to be boolean
+                loadable.name?.loadable.voidable;
+                loadable.artist?.loadable.voidable;
+                loadable.artist?.value.age?.loadable.voidable;
+                loadable.songs.value.album?.loadable.voidable;
+
+                loadable.songs?.value[SelectionSymbol].type[TypeSymbol].class;
 
                 new loadable[SelectionSymbol].type[TypeSymbol].class();
                 let metadata = loadable[SelectionSymbol].type[TypeSymbol].class;

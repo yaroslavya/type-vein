@@ -78,5 +78,8 @@ export type PickedVoidableProperty<P extends Property & HasContext<C, any, any>,
 export type PickedVoidables<T extends Type, C extends Context>
     = Selection<T>
     & {
-        [K in PropertyKeys<T, HasContext<C, any, any>>]: PickedVoidableProperty<T[K], C>;
+        [K in PropertyKeys<T, HasContext<C, any, false>>]: PickedVoidableProperty<T[K], C>;
+    }
+    & {
+        [K in PropertyKeys<T, HasContext<C, any, true>>]?: PickedVoidableProperty<T[K], C>;
     };
