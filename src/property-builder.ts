@@ -54,6 +54,11 @@ export class PropertyBuilder<K extends string, V, A extends string = K, P extend
         return this as any;
     }
 
+    custom<X extends string, Y>(key: X, value: Y): PropertyBuilder<K, V, A, P & Record<X, Y>> {
+        (this._property as any)[key] = value;
+        return this as any;
+    }
+
     build(): P {
         return this._property;
     }
