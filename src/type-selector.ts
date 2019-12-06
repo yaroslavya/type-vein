@@ -33,7 +33,9 @@ function selectType<T extends Type, C extends Context>(type: T, context: C): Sel
     return selectedType;
 }
 
-export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasContext<C, any, false>>> {
+export type DefaultSelection<T extends Type, C extends Context> = Select<T, HasContext<C, any, false>>;
+
+export class TypeSelector<T extends Type, C extends Context, S = DefaultSelection<T, C>> {
     constructor(type: T, context: C) {
         if (!Type.is(type)) {
             throw new Error(`expected argument 'type' to be a Type`);

@@ -100,7 +100,7 @@ describe("playground", () => {
         let typeQuery = new TypeQuery(new AlbumType());
 
         let selectedType = typeQuery
-            .select(s => s
+            .include(s => s
                 .select(s => s.name)
                 .select(x => x.songs, s => s
                     .select(x => x.album, s => s

@@ -5,13 +5,15 @@ import { HasContext } from "./context";
 import { Select } from "./select";
 import { Selection } from "./selection";
 
-export type QueriedType<T extends Type, S extends Selection<T>, C extends CriteraBuilder<S, "loadable">>
-    = {
-        selected: S;
-        criteria: C;
-    };
+export type QueriedType<T extends Type, S extends Selection<T>, C extends CriteraBuilder<S, "loadable">> = {
+    selected: S;
+    criteria: C;
+};
 
-export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasContext<"loadable", any, false>>> {
+export type DefaultQuerySelection<T extends Type> = Select<T, HasContext<"loadable", any, false>>;
+
+// [todo] i think we can safely remove 'extends Selection<T>' constraint from S
+export class TypeQuery<T extends Type, S extends Selection<T> = DefaultQuerySelection<T>> {
     constructor(type: T) {
         this._type = type;
         this._selector = new TypeSelector(type, "loadable");
@@ -20,7 +22,7 @@ export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasCon
     private readonly _type: T;
     private readonly _selector: TypeSelector<T, "loadable", S>;
 
-    select<O>(select: (selector: TypeSelector<T, "loadable", S>) => TypeSelector<T, "loadable", O>): TypeQuery<T, S & O> {
+    include<O>(select: (selector: TypeSelector<T, "loadable", S>) => TypeSelector<T, "loadable", O>): TypeQuery<T, S & O> & this {
         select(this._selector);
         return this as any;
     }
@@ -37,5 +39,9 @@ export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasCon
             selected: this._selector.build(),
             criteria: {} as CriteraBuilder<S, "loadable">
         };
+    }
+
+    buildSelection(): S {
+        return this._selector.build();
     }
 }
