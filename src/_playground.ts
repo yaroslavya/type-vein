@@ -2,6 +2,7 @@ import { Instance, AliasedInstance } from "./instance";
 import { Type, TypeSymbol } from "./type";
 import { Property } from "./property";
 import { HasContext } from "./context";
+import { TypeSelector } from "./type-selector";
 
 class AlbumType {
     [TypeSymbol] = Type.createMetadata(AlbumType);
@@ -40,3 +41,26 @@ let creatableInstance: Instance<AlbumType, "creatable"> = {
         name: "foo"
     }
 };
+
+/**
+ * default instance issue
+ */
+class FooType {
+    [TypeSymbol] = Type.createMetadata(FooType);
+    bar = Property.create("bar", String, b => b.loadable());
+    baz = Property.create("bar", String, b => b.loadable(["voidable"]));
+}
+
+function takesFooTypeInstance(instance: Instance<FooType, "loadable">): void {
+    if (instance.baz !== void 0) {
+        // do stuff
+    }
+}
+
+let selectedFooType = new TypeSelector(new FooType(), "loadable").build();
+
+let selectedFooTypeInstance: Instance<typeof selectedFooType, "loadable"> = {
+    bar: "cozy-clouds"
+};
+
+takesFooTypeInstance(selectedFooTypeInstance); // works!

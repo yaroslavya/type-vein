@@ -11,7 +11,7 @@ export type QueriedType<T extends Type, S extends Selection<T>, C extends Criter
         criteria: C;
     };
 
-export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasContext<"loadable">>> {
+export class TypeQuery<T extends Type, S extends Selection<T> = Select<T, HasContext<"loadable", any, false>>> {
     constructor(type: T) {
         this._type = type;
         this._selector = new TypeSelector(type, "loadable");

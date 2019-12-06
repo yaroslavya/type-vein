@@ -1,4 +1,4 @@
-import { Type, Property, TypeSelector, TypeSymbol, SelectionSymbol, IsIterable, Instance } from "../../src";
+import { Type, Property, TypeSelector, TypeSymbol, SelectionSymbol, Instance } from "../../src";
 
 describe("type-selector", () => {
     /**
@@ -8,7 +8,7 @@ describe("type-selector", () => {
      * we are forced have to make a copy - otherwise the selected type could contain properties that
      * don't have the context specified during construction of the TypeSelector
      */
-    it("should start with a copy of the source-type that contains all its primitives", () => {
+    it("should start with a copy of the source-type that contains all non-voidable properties (deep)", () => {
         /**
          * [arrange]
          */
@@ -21,6 +21,7 @@ describe("type-selector", () => {
 
         class CoffeeBeansType {
             [TypeSymbol] = Type.createMetadata(CoffeeBeansType);
+            origin = Property.create("origin", String, b => b.loadable(["voidable"]));
             tasty = Property.create("tasty", Boolean, b => b.loadable());
         }
 
@@ -37,9 +38,14 @@ describe("type-selector", () => {
          */
         expect(selectedType[SelectionSymbol].type[TypeSymbol].class).toBe(CoffeeCupType, "source metadata class was expected to be 'CoffeeCupType'");
         expect(selectedType.label).toBe(sourceType.label, "expected 'label' property to be copied by reference");
-        expect(selectedType.volume).toBe(sourceType.volume, "expected 'volume' property to be copied by reference");
-        expect(selectedType.volume.loadable.voidable).toBe(true, "expected voidable property to still be voidable because it wasn't explicitly selected");
-        expect((selectedType as Record<string, any>).beans).toBeUndefined("expected 'beans' property to not be copied over because it wasn't explicitly selected");
+        expect(selectedType.beans).toBeDefined("expected 'beans' property to be defined");
+        expect(selectedType.beans.value.tasty).toBeDefined("expected 'beans.tasty' property to be defined");
+
+        expect((selectedType as Record<string, any>).volume).toBeUndefined("expected 'volume' property to not be copied over because it wasn't explicitly selected");
+    });
+
+    it("should allow us to include voidable properties and make them non-voidable", () => {
+
     });
 
     it("should create a selection as expected", () => {
@@ -71,6 +77,7 @@ describe("type-selector", () => {
             .select(x => x.name)
             .select(x => x.songs, q => q
                 .select(x => x.name)
+                .select(x => x.duration)
                 .select(x => x.album, q => q
                     .select(x => x.releasedAt)
                 )
@@ -88,9 +95,8 @@ describe("type-selector", () => {
         expect(selectedType.name.loadable.voidable).toBe(false, "expected 'name' property to no longer be voidable because it was selected");
         expect(selectedType.songs).not.toBe(sourceType.songs as any, "expected 'songs' property to be cloned");
         expect(selectedType.songs.value instanceof Function).toBe(false, "expanded type in property 'songs' was still a class");
-        expect(selectedType.songs.value.duration.loadable.voidable).toBe(true, "expected 'name' property to no longer be voidable because it was explicitly selected");
+        expect(selectedType.songs.value.duration.loadable.voidable).toBe(false, "expected 'name' property to no longer be voidable because it was explicitly selected");
         expect(selectedType.songs.value.duration).not.toBe(songType.duration as any, "expected 'songs.duration' property to be cloned");
-        expect(selectedType.songs.value.duration).toEqual(songType.duration as any, "expected 'songs.duration' property to equal the one from source");
         expect(selectedType.songs.value.album).not.toBe(selectedType as any, "unexpected type recursion in 'songs.album' property");
         expect(selectedType.songs.value.album).not.toEqual(selectedType as any, "unexpected type recursion in 'songs.album' property");
     });

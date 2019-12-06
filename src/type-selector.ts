@@ -1,11 +1,39 @@
 import { Property, propertiesOf, ReplacePropertyValue } from "./property";
-import { Unbox, Primitive } from "./lang";
+import { Unbox } from "./lang";
 import { Type } from "./type";
 import { Context, HasContext, ChangeContextVoidable, hasContext } from "./context";
 import { SelectionSymbol, Selection } from "./selection";
 import { Select } from "./select";
 
-export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasContext<C> & Property.Primitive>> {
+/**
+ * [todo] move this function to somewhere else
+ */
+function selectType<T extends Type, C extends Context>(type: T, context: C): Select<T, HasContext<C, any, false>> {
+    let requiredPrimitiveProperties = propertiesOf(type, p => Property.isPrimitive(p) && hasContext(p, context) && p[context].voidable === false);
+    let requiredExpandableProperties = propertiesOf(type, p => Property.isComplex(p) && hasContext(p, context) && p[context].voidable === false);
+
+    for (let k in requiredExpandableProperties) {
+        let property = requiredExpandableProperties[k];
+
+        let copy = {
+            ...property,
+            value: selectType(property.value instanceof Function ? new property.value() : property.value, context)
+        };
+
+        requiredExpandableProperties[k] = copy;
+    }
+
+    // [todo] cast to any required - this might indicate a type design issue
+    let selectedType: Select<T, HasContext<C, any, false>> = {
+        [SelectionSymbol]: Selection.createMetadata(type),
+        ...requiredPrimitiveProperties,
+        ...requiredExpandableProperties
+    } as any;
+
+    return selectedType;
+}
+
+export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasContext<C, any, false>>> {
     constructor(type: T, context: C) {
         if (!Type.is(type)) {
             throw new Error(`expected argument 'type' to be a Type`);
@@ -14,12 +42,8 @@ export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasCo
         this._type = type;
         this._context = context;
 
-        let selectedType: Selection & Record<string, Property> = {
-            [SelectionSymbol]: Selection.createMetadata(type),
-            ...propertiesOf(type, p => Property.isPrimitive(p) && hasContext(p, context))
-        };
-
-        this._selected = selectedType as any as S;
+        // [todo] cast to any required - this might indicate a type design issue
+        this._selected = selectType(type, context) as any;
     }
 
     private readonly _type: T;

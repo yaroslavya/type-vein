@@ -6,7 +6,7 @@ describe("playground", () => {
             [TypeSymbol] = Type.createMetadata(AlbumType);
             name = Property.create("name", String, b => b.loadable(["voidable"]));
             releasedAt = Property.create("releasedAt", String, b => b.loadable());
-            songs = Property.create("songs", SongType, b => b.loadable([]).iterable());
+            songs = Property.create("songs", SongType, b => b.loadable().iterable());
         }
 
         class SongType {
@@ -19,9 +19,9 @@ describe("playground", () => {
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
             load(loadable, criteria) {
                 loadable.name.loadable;
-                loadable.songs.value.album.loadable;
+                loadable.songs.value.album;
 
-                loadable.songs?.value[SelectionSymbol].type[TypeSymbol].class;
+                loadable.songs.value[SelectionSymbol].type[TypeSymbol].class;
 
                 new loadable[SelectionSymbol].type[TypeSymbol].class();
                 let metadata = loadable[SelectionSymbol].type[TypeSymbol].class;
@@ -70,7 +70,6 @@ describe("playground", () => {
         class AlbumType {
             [TypeSymbol] = Type.createMetadata(AlbumType);
             name = Property.create("name", String, b => b.loadable(["voidable"]).filterable().unique());
-            // releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "omittable", "voidable"]).filterable());
             releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "voidable"]).filterable());
             songs = Property.create("songs", SongType, b => b.loadable(["voidable"]).iterable());
         }
@@ -104,32 +103,43 @@ describe("playground", () => {
                 .equals(s => s.name, "quak")
                 .select(s => s.songs, s => s.select(t => t.album, s => s.equals(t => t.releasedAt, true ? null : "2001")))
             )
-            .build()
-            ;
-
+            .build();
 
         let instance: Instance<typeof selectedType["selected"], "loadable"> = {
             name: "foo",
-            releasedAt: void 0,
             songs: [{
                 duration: true ? null : 3,
                 name: "foo",
                 album: {
-                    releasedAt: "2001",
-                    name: void 0,
-                    songs: void 0
+                    releasedAt: "2001"
                 }
-                // album: {
-                //     // releasedAt: true ? (true ? null : void 0) : "2001"
-                //     releasedAt: true ? null : "2001"
-                // }
             }]
         };
+    });
 
-        // let filtersName = (cb: CriteraBuilder<SelectedType<AlbumType>>) => {
-        //     cb.equals(x => x.name, "lala");
-        //     cb.equals("foo", x => x.name);
-        //     cb.equals("lala", x => x.name);
-        // };
+    it("playing with inheritance on data models", () => {
+        class FileSystemNode implements Type<typeof FileSystemNode> {
+            [TypeSymbol] = Type.createMetadata(FileSystemNode);
+
+            // common properties
+            id = Property.create("id", String, "Id", b => b.loadable());
+            name = Property.create("name", String, "Filename", b => b.loadable());
+
+            // directory properties
+            children = Property.create("children", FileSystemNode, "Children", b => b.loadable(["voidable"]));
+
+            // file properties
+            size = Property.create("size", Number, "FileSizeInBytes", b => b.loadable(["voidable"]));
+
+            // properties of audio/video files
+            duration = Property.create("duration", Number, "Duration", b => b.loadable(["voidable"]));
+
+            // properties of document files
+            pages = Property.create("pages", Number, "Pages", b => b.loadable(["voidable"]));
+
+            // properties of image files
+            height = Property.create("height", Number, "Height", b => b.loadable(["voidable"]).custom("image", true));
+            width = Property.create("width", Number, "Width", b => b.loadable(["voidable"]));
+        }
     });
 });

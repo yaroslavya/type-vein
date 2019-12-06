@@ -9,14 +9,20 @@ export type InstancedValueOfProperty<P extends Property, C extends Context, X>
     = P["value"] extends Primitive ? BoxPropertyValue<P, ReturnType<P["value"]>>
     : BoxPropertyValue<P, Instance<Unbox<P["value"]>, C, X>>;
 
-export type Instance<T, C extends Context, P = Property> = {
-    [K in PropertyKeys<T, HasContext<C, any, any> & P>]: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C, P>>;
-};
+export type Instance<T, C extends Context, P = Property>
+    = {
+        [K in PropertyKeys<T, HasContext<C, any, false> & P>]: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C, P>>;
+    } & {
+        [K in PropertyKeys<T, HasContext<C, any, true> & P>]?: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C, P>>;
+    };
 
 export type AliasedInstancedValueOfProperty<P extends Property, C extends Context>
     = P["value"] extends Primitive ? BoxPropertyValue<P, ReturnType<P["value"]>>
     : BoxPropertyValue<P, AliasedInstance<Unbox<P["value"]>, C>>;
 
-export type AliasedInstance<T, C extends Context> = {
-    [K in PropertyKeys<T, HasContext<C, any, any>, true>]: WidenValueForContext<PropertyAliased<T, K>, C, AliasedInstancedValueOfProperty<PropertyAliased<T, K>, C>>;
-};
+export type AliasedInstance<T, C extends Context>
+    = {
+        [K in PropertyKeys<T, HasContext<C, any, true>, true>]: WidenValueForContext<PropertyAliased<T, K>, C, AliasedInstancedValueOfProperty<PropertyAliased<T, K>, C>>;
+    } & {
+        [K in PropertyKeys<T, HasContext<C, any, false>, true>]?: WidenValueForContext<PropertyAliased<T, K>, C, AliasedInstancedValueOfProperty<PropertyAliased<T, K>, C>>;
+    };
