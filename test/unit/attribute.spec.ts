@@ -1,7 +1,7 @@
 import { Attribute, allAttributes, hasAttribute } from "../../src";
 
 describe("attribute.ts", () => {
-    it("allAttributes() should contain all the attributes shipped with entity-space", () => {
+    it("allAttributes() should contain all the attributes shipped with type-vein", () => {
         let expected: Attribute[] = ["filterable", "indexable", "iterable", "unique"];
         let actual = allAttributes();
 
