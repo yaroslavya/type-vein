@@ -1,13 +1,6 @@
 import { Type, Property, TypeSelector, TypeSymbol, SelectionSymbol, Instance } from "../../src";
 
 describe("type-selector", () => {
-    /**
-     * [note] we're expecting only primitives to be copied over since otherwise we'd copy the
-     * whole web of related entities, which would be unnecessarily expensive in terms of performance.
-     * 
-     * we are forced have to make a copy - otherwise the selected type could contain properties that
-     * don't have the context specified during construction of the TypeSelector
-     */
     it("should start with a copy of the source-type that contains all non-voidable properties (deep)", () => {
         /**
          * [arrange]
@@ -44,8 +37,49 @@ describe("type-selector", () => {
         expect((selectedType as Record<string, any>).volume).toBeUndefined("expected 'volume' property to not be copied over because it wasn't explicitly selected");
     });
 
-    it("should allow us to include voidable properties and make them non-voidable", () => {
+    it("should allow us to assign instance of selected type to be assignable to default instance", () => {
+        /**
+         * [arrange]
+         */
+        class CoffeeCupType {
+            [TypeSymbol] = Type.createMetadata(CoffeeCupType);
+            label = Property.create("label", String, b => b.loadable());
+            beans = Property.create("beans", CoffeeBeansType, b => b.loadable());
+            volume = Property.create("volume", Number, b => b.loadable(["voidable"]));
+        }
 
+        class CoffeeBeansType {
+            [TypeSymbol] = Type.createMetadata(CoffeeBeansType);
+            origin = Property.create("origin", String, b => b.loadable(["voidable"]));
+            tasty = Property.create("tasty", Boolean, b => b.loadable());
+        }
+
+        function takesCoffeeCupTypeInstance(instance: Instance<CoffeeCupType, "loadable">): void {
+            if (instance.volume !== void 0) {
+                // do stuff
+            }
+        }
+
+        /**
+         * [act]
+         */
+        let typeSelector = new TypeSelector(new CoffeeCupType(), "loadable");
+        let selectedType = typeSelector.build();
+        let instance: Instance<typeof selectedType, "loadable"> = {
+            beans: {
+                tasty: true
+            },
+            label: "tasty coffee"
+        };
+
+        /**
+         * [assert] (compile time check only)
+         */
+        takesCoffeeCupTypeInstance(instance);
+    });
+
+    it("should allow us to include voidable properties and make them non-voidable", () => {
+        // todo
     });
 
     it("should create a selection as expected", () => {
