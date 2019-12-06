@@ -1,23 +1,26 @@
-import { Type, Property, InstanceLoader, TypeQuery, Instance, HasContext, TypeSymbol, SelectionSymbol, IsIterable, IsFilterable, IsUnique } from "../../src";
+import { Type, Property, InstanceLoader, TypeQuery, Instance, TypeSymbol, SelectionSymbol } from "../../src";
 
-describe("instance-loader", () => {
-    it("should do stuff", () => {
+describe("playground", () => {
+    it("playing with instance-loader", () => {
         class AlbumType {
             [TypeSymbol] = Type.createMetadata(AlbumType);
-            name = Property.create("name", String);
-            releasedAt = Property.create("releasedAt", String);
-            songs = Property.create("songs", SongType, b => b.loadable().iterable());
+            name = Property.create("name", String, b => b.loadable(["voidable"]));
+            releasedAt = Property.create("releasedAt", String, b => b.loadable());
+            songs = Property.create("songs", SongType, b => b.loadable([]).iterable());
         }
 
         class SongType {
             [TypeSymbol] = Type.createMetadata(SongType);
-            album = Property.create("album", AlbumType, b => b.loadable());
+            album = Property.create("album", AlbumType, b => b.loadable(["voidable", "nullable"]));
             duration = Property.create("duration", Number, b => b.loadable());
             name = Property.create("name", String, b => b.loadable());
         }
 
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
             load(loadable, criteria) {
+                loadable.name.loadable;
+                loadable.songs.value.album.loadable;
+
                 loadable.songs?.value[SelectionSymbol].type[TypeSymbol].class;
 
                 new loadable[SelectionSymbol].type[TypeSymbol].class();
@@ -30,16 +33,20 @@ describe("instance-loader", () => {
                 }
 
                 return new Map([
-                    [1, {}]
+                    [1, {
+
+                    } as any]
                 ]);
             }
         };
 
         let anyTypeInstanceLoader: InstanceLoader<AlbumType | SongType> = {
             load(loadable) {
+
                 let metadata = loadable[SelectionSymbol].type[TypeSymbol];
 
                 if (metadata.class === AlbumType) {
+
                     new metadata.class().releasedAt.key;
                 }
                 // if (metadata.class === AlbumType) {
@@ -50,15 +57,15 @@ describe("instance-loader", () => {
                 // }
 
                 return new Map([
-                    [1, {}]
+                    [1, {
+                        name: "foo"
+                    }]
                 ]);
             }
         };
     });
-});
 
-describe("type-query", () => {
-    it("should do stuff", () => {
+    it("playing with type-query", () => {
         // arrange
         class AlbumType {
             [TypeSymbol] = Type.createMetadata(AlbumType);
@@ -103,11 +110,14 @@ describe("type-query", () => {
 
         let instance: Instance<typeof selectedType["selected"], "loadable"> = {
             name: "foo",
+            releasedAt: void 0,
             songs: [{
                 duration: true ? null : 3,
                 name: "foo",
                 album: {
-                    releasedAt: "2001"
+                    releasedAt: "2001",
+                    name: void 0,
+                    songs: void 0
                 }
                 // album: {
                 //     // releasedAt: true ? (true ? null : void 0) : "2001"
