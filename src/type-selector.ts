@@ -50,47 +50,43 @@ export class TypeSelector<T extends Type, C extends Context, S = Select<T, HasCo
     private readonly _context: C;
     private readonly _selected: S;
 
+    // [todo] no longer sure why there is an Omit<S, P["key"]> 
     select<P extends Property.Primitive & HasContext<C, any, true>>(
         select: (properties: T) => P
     ): TypeSelector<T, C, Omit<S, P["key"]> & Record<P["key"], ChangeContextVoidable<P, C, false>>>;
 
-    select<P extends Property.Complex & HasContext<C, any, any>, E>(
+    // [todo] no longer sure why there is an Omit<S, P["key"]> 
+    select<P extends Property.Complex & HasContext<C, any, any>, E = Select<Unbox<P["value"]>, HasContext<C, any, false>>>(
         select: (properties: T) => P,
-        expand: (selector: TypeSelector<Unbox<P["value"]>, C>) => TypeSelector<Unbox<P["value"]>, C, E>
+        expand?: (selector: TypeSelector<Unbox<P["value"]>, C>) => TypeSelector<Unbox<P["value"]>, C, E>
     ): TypeSelector<T, C, Omit<S, P["key"]> & Record<P["key"], ReplacePropertyValue<ChangeContextVoidable<P, C, false>, E>>>;
 
     select(...args: any[]): any {
-        if (args.length === 1 && args[0] instanceof Function) {
+        if (args[0] instanceof Function) {
             let property = this._fetchProperty(args[0]);
 
-            if (!Property.isPrimitive(property)) {
-                throw new Error(`expected property '${property.key}' to be primitive`);
+            if (Property.isPrimitive(property)) {
+                if (!hasContext(property, this._context)) {
+                    throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
+                }
+
+                if (property[this._context].voidable === false) {
+                    throw new Error(`expected property '${property.key}' to be voidable for context '${this._context}'`);
+                }
+
+                this._selectProperty(property);
+            } else if (Property.isComplex(property)) {
+                if (!hasContext(property, this._context)) {
+                    throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
+                }
+
+                let type = this._getExpandableType(property);
+                let expand: (selector: TypeSelector<any, any>) => TypeSelector<any, any> = args[1] || (q => q);
+                let expandedType = expand(new TypeSelector(type, this._context)).build();
+                this._selectProperty(property, expandedType);
+            } else {
+                throw new Error(`arguments didn't match any overload signature`);
             }
-
-            if (!hasContext(property, this._context)) {
-                throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
-            }
-
-            if (property[this._context].voidable === false) {
-                throw new Error(`expected property '${property.key}' to be voidable for context '${this._context}'`);
-            }
-
-            this._selectProperty(property);
-        } else if (args.length === 2 && args[0] instanceof Function && args[1] instanceof Function) {
-            let property = this._fetchProperty(args[0]);
-
-            if (!Property.isComplex(property)) {
-                throw new Error(`expected property '${property.key}' to be complex`);
-            }
-
-            if (!hasContext(property, this._context)) {
-                throw new Error(`expected property '${property.key}' to be have context '${this._context}'`);
-            }
-
-            let type = this._getExpandableType(property);
-            let expand: (selector: TypeSelector<any, any>) => TypeSelector<any, any> = args[1];
-            let expandedType = expand(new TypeSelector(type, this._context)).build();
-            this._selectProperty(property, expandedType);
         } else {
             throw new Error(`arguments didn't match any overload signature`);
         }
