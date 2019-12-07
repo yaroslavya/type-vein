@@ -1,4 +1,9 @@
 /**
+ * [note] this file contains the most atomic and non-type-vein specific types.
+ * you could consider it to be a universal extension to typescript/lib.d.ts
+ */
+
+/**
  * The union of all native constructors that return a primitive.
  */
 export type Primitive = typeof Boolean | typeof Number | typeof String;
@@ -9,14 +14,17 @@ export module Primitive {
     }
 }
 
+/**
+ * A type that has a constructor.
+ */
 export type Class = new (...args: any) => any;
 
 /**
  * Takes a type T and returns:
- *  - the contained type if it is an Array
- *  - the instantiated type if it is a Class
- *  - the returned type if it is a Function
- *  - T if it is none of the options above
+ *  - the contained type if T is an Array, which is T[number]
+ *  - the instantiated type if T is a Class, which is InstanceType<T>
+ *  - the returned type if it T a Function, which is ReturnType<T>
+ *  - T if none of the above
  */
 export type Unbox<T>
     = T extends any[] ? T[number]
