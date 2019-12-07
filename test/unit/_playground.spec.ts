@@ -147,23 +147,50 @@ describe("playground", () => {
                 .custom("image", true as true)
             );
 
-            name = Property.create("name", String, "Filename", b => b.loadable());
+            name = Property.create("name", String, "Filename", b => b.loadable()
+                .custom("folder", true as true)
+                .custom("file", true as true)
+                .custom("audio", true as true)
+                .custom("video", true as true)
+                .custom("document", true as true)
+                .custom("image", true as true)
+            );
 
             // folder properties
-            children = Property.create("children", FileSystemNode, "Children", b => b.loadable(["voidable"]).iterable().custom("image", true as true));
+            children = Property.create("children", FileSystemNode, "Children", b => b.loadable(["voidable"]).iterable()
+                .custom("folder", true as true)
+            );
 
             // file properties
-            size = Property.create("size", Number, "FileSizeInBytes", b => b.loadable(["voidable"]));
+            size = Property.create("size", Number, "FileSizeInBytes", b => b.loadable(["voidable"])
+                .custom("file", true as true)
+                .custom("audio", true as true)
+                .custom("video", true as true)
+                .custom("document", true as true)
+                .custom("image", true as true)
+            );
 
             // properties of audio/video files
-            duration = Property.create("duration", Number, "Duration", b => b.loadable(["voidable"]).custom("video", true as true).custom("audio", true as true));
+            duration = Property.create("duration", Number, "Duration", b => b.loadable(["voidable"])
+                .custom("video", true as true)
+                .custom("audio", true as true)
+            );
 
             // properties of document files
-            pages = Property.create("pages", Number, "Pages", b => b.loadable(["voidable"]));
+            pages = Property.create("pages", Number, "Pages", b => b.loadable(["voidable"])
+                .custom("document", true as true)
+            );
 
             // properties of image/video files
-            height = Property.create("height", Number, "Height", b => b.loadable(["voidable"]).custom("image", true as true).custom("video", true as true));
-            width = Property.create("width", Number, "Width", b => b.loadable(["voidable"]).custom("image", true as true).custom("video", true as true));
+            height = Property.create("height", Number, "Height", b => b.loadable(["voidable"])
+                .custom("image", true as true)
+                .custom("video", true as true)
+            );
+
+            width = Property.create("width", Number, "Width", b => b.loadable(["voidable"])
+                .custom("image", true as true)
+                .custom("video", true as true)
+            );
         }
 
         type MakePropertyRequired<P extends HasContext<C>, C extends Context> = P[C]["voidable"] extends true ? ChangeContextVoidable<P, C, false> : P;
@@ -174,23 +201,52 @@ describe("playground", () => {
                 [K in PropertyKeys<T, P & HasContext<C>>]: MakePropertyRequired<T[K], C>;
             };
 
+        let fileSystemNodeInstance: Instance<FileSystemNode, "loadable"> = {
+            id: "file-system-node-id",
+            name: "the-file-system-node"
+        };
+
+        let folderInstance: Instance<MakePropertiesRequired<FileSystemNode, "loadable", { folder: true }>, "loadable"> = {
+            id: "folder-id",
+            name: "the-folder",
+            children: []
+        };
+
+        let fileInstance: Instance<MakePropertiesRequired<FileSystemNode, "loadable", { file: true }>, "loadable"> = {
+            id: "file-id",
+            name: "the-file",
+            size: 1337 * 1024 * 1024
+        };
+
+        let documentInstance: Instance<MakePropertiesRequired<FileSystemNode, "loadable", { document: true }>, "loadable"> = {
+            id: "document-id",
+            name: "the-document",
+            pages: 64,
+            size: 7 * 1024
+        };
+
         let videoInstance: Instance<MakePropertiesRequired<FileSystemNode, "loadable", { video: true }>, "loadable"> = {
             id: "video-id",
+            name: "the-video",
             duration: 543,
             height: 1080,
-            width: 1920
+            width: 1920,
+            size: 32 * 1024 * 1024
         };
 
         let audioInstance: Instance<MakePropertiesRequired<FileSystemNode, "loadable", { audio: true }>, "loadable"> = {
             id: "audio-id",
-            duration: 123
+            name: "the-audio",
+            duration: 123,
+            size: 24 * 1024 * 1024
         };
 
         let imageInstance: Instance<MakePropertiesRequired<FileSystemNode, "loadable", { image: true }>, "loadable"> = {
             id: "image-id",
-            children: [],
+            name: "the-image",
             height: 640,
-            width: 800
+            width: 800,
+            size: 1 * 1024 * 1024
         };
     });
 });
