@@ -1,6 +1,6 @@
 import { SourceType, Property, SourceTypeTapper, SourceTypeSymbol, TappedTypeSymbol, Instance } from "../../src";
 
-describe("type-selector", () => {
+describe("source-type-tapper", () => {
     it("should start with a copy of the source-type that contains all non-voidable properties (deep)", () => {
         /**
          * [arrange]

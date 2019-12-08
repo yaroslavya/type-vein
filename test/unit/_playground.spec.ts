@@ -89,7 +89,7 @@ describe("playground", () => {
         };
     });
 
-    it("playing with type-query", () => {
+    it("playing with query", () => {
         // arrange
         class AlbumType {
             [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);
