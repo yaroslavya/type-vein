@@ -11,15 +11,15 @@ describe("type-query", () => {
          */
         class CoffeeCupType {
             [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCupType);
-            label = Property.create("label", String, b => b.loadable(["voidable"]));
-            beans = Property.create("beans", CoffeeBeansType, b => b.loadable(["voidable"]));
-            volume = Property.create("volume", Number, b => b.loadable(["voidable"]));
+            label = Property.create("label", String, b => b.loadable(["optional"]));
+            beans = Property.create("beans", CoffeeBeansType, b => b.loadable(["optional"]));
+            volume = Property.create("volume", Number, b => b.loadable(["optional"]));
         }
 
         class CoffeeBeansType {
             [SourceTypeSymbol] = SourceType.createMetadata(CoffeeBeansType);
-            origin = Property.create("origin", String, b => b.loadable(["voidable"]));
-            tasty = Property.create("tasty", Boolean, b => b.loadable(["voidable"]));
+            origin = Property.create("origin", String, b => b.loadable(["optional"]));
+            tasty = Property.create("tasty", Boolean, b => b.loadable(["optional"]));
         }
 
         // [todo] 'extends Selection<CoffeeCupType>' can possibly be removed in the future
