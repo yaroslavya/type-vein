@@ -4,14 +4,14 @@ import { Property } from "../property";
 import { Primitive, Unbox } from "../lang";
 import { Attribute } from "../attribute";
 
-export interface Criteria {
-    [k: string]: Criterion[] | SetCriterion[] | Criteria[];
+export interface InstanceCriteria {
+    [k: string]: Criterion[] | SetCriterion[] | InstanceCriteria[];
 }
 
-export type CriteriaForType<T> = {
-    [K in Property.Keys<T>]?:
-    T[K] extends Property & { value: Primitive; } ? Criterion[]
+export type InstanceCriteriaForType<T> = {
+    [K in Property.Keys<T>]?
     : T[K] extends Property & { value: Primitive; } & Attribute.IsIterable ? SetCriterion[]
-    : T[K] extends Property ? CriteriaForType<Unbox<T[K]["value"]>>[]
+    : T[K] extends Property & { value: Primitive; } ? Criterion[]
+    : T[K] extends Property ? InstanceCriteriaForType<Unbox<T[K]["value"]>>[]
     : never;
 };
