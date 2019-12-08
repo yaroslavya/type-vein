@@ -1,9 +1,9 @@
-import { Attribute, allAttributes, hasAttribute } from "../../src";
+import { Attribute } from "../../src";
 
 describe("attribute.ts", () => {
     it("allAttributes() should contain all the attributes shipped with type-vein", () => {
         let expected: Attribute[] = ["filterable", "indexable", "iterable", "unique"];
-        let actual = allAttributes();
+        let actual = Attribute.all();
 
         expected.sort();
         actual.sort();
@@ -16,7 +16,7 @@ describe("attribute.ts", () => {
             iterable: true
         };
 
-        expect(hasAttribute(hasIterableAttribute, "iterable"))
+        expect(Attribute.has(hasIterableAttribute, "iterable"))
             .toBe(true, `expected '${JSON.stringify(hasIterableAttribute)}' to have a property named 'iterable' set to true`);
     });
 });

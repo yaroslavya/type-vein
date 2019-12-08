@@ -1,28 +1,29 @@
 import { Primitive, Unbox } from "./lang";
-import { Property, PropertyKeys, PropertyAliased } from "./property";
-import { IsIterable } from "./attribute";
-import { Context, HasContext, WidenValueForContext } from "./context";
+import { Property } from "./property";
+import { Attribute } from "./attribute";
+import { Context } from "./context";
 
-export type BoxPropertyValue<P, V> = P extends IsIterable ? V[] : V;
+export type BoxPropertyValue<P, V> = P extends Attribute.IsIterable ? V[] : V;
 
-export type InstancedValueOfProperty<P extends Property, C extends Context, X>
-    = P["value"] extends Primitive ? BoxPropertyValue<P, ReturnType<P["value"]>>
-    : BoxPropertyValue<P, Instance<Unbox<P["value"]>, C, X>>;
+export type InstancedValueOfProperty<P extends Property, CTX extends Context, X>
+    = P["value"] extends Primitive
+    ? BoxPropertyValue<P, ReturnType<P["value"]>>
+    : BoxPropertyValue<P, Instance<Unbox<P["value"]>, CTX, X>>;
 
-export type Instance<T, C extends Context, P = Property>
+export type Instance<T, CTX extends Context, P = Property>
     = {
-        [K in PropertyKeys<T, HasContext<C, any, false> & P>]: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C, P>>;
+        [K in Property.Keys<T, Context.IsRequired<CTX> & P>]: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, P>>;
     } & {
-        [K in PropertyKeys<T, HasContext<C, any, true> & P>]?: WidenValueForContext<T[K], C, InstancedValueOfProperty<T[K], C, P>>;
+        [K in Property.Keys<T, Context.IsOptional<CTX> & P>]?: Context.WidenValue<T[K], CTX, InstancedValueOfProperty<T[K], CTX, P>>;
     };
 
-export type AliasedInstancedValueOfProperty<P extends Property, C extends Context>
+export type AliasedInstancedValueOfProperty<P extends Property, CTX extends Context>
     = P["value"] extends Primitive ? BoxPropertyValue<P, ReturnType<P["value"]>>
-    : BoxPropertyValue<P, AliasedInstance<Unbox<P["value"]>, C>>;
+    : BoxPropertyValue<P, AliasedInstance<Unbox<P["value"]>, CTX>>;
 
-export type AliasedInstance<T, C extends Context>
+export type AliasedInstance<T, CTX extends Context>
     = {
-        [K in PropertyKeys<T, HasContext<C, any, true>, true>]: WidenValueForContext<PropertyAliased<T, K>, C, AliasedInstancedValueOfProperty<PropertyAliased<T, K>, C>>;
+        [K in Property.Aliases<T, Context.IsRequired<CTX>>]: Context.WidenValue<Property.Aliased<T, K>, CTX, AliasedInstancedValueOfProperty<Property.Aliased<T, K>, CTX>>;
     } & {
-        [K in PropertyKeys<T, HasContext<C, any, false>, true>]?: WidenValueForContext<PropertyAliased<T, K>, C, AliasedInstancedValueOfProperty<PropertyAliased<T, K>, C>>;
+        [K in Property.Aliases<T, Context.IsOptional<CTX>>]?: Context.WidenValue<Property.Aliased<T, K>, CTX, AliasedInstancedValueOfProperty<Property.Aliased<T, K>, CTX>>;
     };

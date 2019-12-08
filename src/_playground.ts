@@ -1,27 +1,27 @@
 import { Instance, AliasedInstance } from "./instance";
-import { Type, TypeSymbol } from "./type";
+import { SourceType, SourceTypeSymbol } from "./source-type";
 import { Property } from "./property";
-import { HasContext } from "./context";
-import { TypeSelector } from "./type-selector";
+import { Context } from "./context";
+import { SourceTypeTapper } from "./source-type-tapper";
 
 class AlbumType {
-    [TypeSymbol] = Type.createMetadata(AlbumType);
-    name = Property.create("name", String, "Name", b => b.creatable(["voidable"]).loadable());
+    [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);
+    name = Property.create("name", String, "Name", b => b.creatable(["optional"]).loadable());
     releasedAt = Property.create("releasedAt", String, b => b.creatable().loadable());
     songs = Property.create("songs", SongType, b => b.iterable().creatable([]).loadable());
-    author = Property.create("author", AuthorType, "Author", b => b.loadable().creatable(["voidable"]));
+    author = Property.create("author", AuthorType, "Author", b => b.loadable().creatable(["optional"]));
 }
 
-class SongType implements Type<typeof SongType> {
-    [TypeSymbol] = Type.createMetadata(SongType);
+class SongType implements SourceType<typeof SongType> {
+    [SourceTypeSymbol] = SourceType.createMetadata(SongType);
     index = Property.create("index", Number, b => b.creatable(["nullable"]));
 }
 
-class AuthorType implements Type<typeof AuthorType> {
-    [TypeSymbol] = Type.createMetadata(AuthorType);
+class AuthorType implements SourceType<typeof AuthorType> {
+    [SourceTypeSymbol] = SourceType.createMetadata(AuthorType);
     name = Property.create("name", String, "Name", b => b.loadable().creatable());
     album: Property<"album", typeof AlbumType> = null as any;
-    bornAt: Property<"releasedAt", typeof String> & HasContext<"loadable"> = null as any;
+    bornAt: Property<"releasedAt", typeof String> & Context.Has<"loadable"> = null as any;
 }
 
 let larifari: AliasedInstance<AlbumType, "creatable"> = {
@@ -46,9 +46,9 @@ let creatableInstance: Instance<AlbumType, "creatable"> = {
  * default instance issue
  */
 class FooType {
-    [TypeSymbol] = Type.createMetadata(FooType);
+    [SourceTypeSymbol] = SourceType.createMetadata(FooType);
     bar = Property.create("bar", String, b => b.loadable());
-    baz = Property.create("bar", String, b => b.loadable(["voidable"]));
+    baz = Property.create("bar", String, b => b.loadable(["optional"]));
 }
 
 function takesFooTypeInstance(instance: Instance<FooType, "loadable">): void {
@@ -57,7 +57,7 @@ function takesFooTypeInstance(instance: Instance<FooType, "loadable">): void {
     }
 }
 
-let selectedFooType = new TypeSelector(new FooType(), "loadable").build();
+let selectedFooType = new SourceTypeTapper(new FooType(), "loadable").build();
 
 let selectedFooTypeInstance: Instance<typeof selectedFooType, "loadable"> = {
     bar: "cozy-clouds"

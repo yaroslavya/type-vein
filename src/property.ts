@@ -1,6 +1,6 @@
 import { Primitive } from "./lang";
-import { Type } from "./type";
-import { Selection } from "./selection";
+import { SourceType } from "./source-type";
+import { TappedType } from "./tapped-type";
 import { PropertyBuilder } from "./property-builder";
 
 export interface Property<K extends string = string, V = any, A extends string = K, P = V extends Primitive ? true : false> {
@@ -10,41 +10,47 @@ export interface Property<K extends string = string, V = any, A extends string =
     value: V;
 }
 
-export type AliasOf<P> = P extends Property ? P["alias"] : never;
+export module Property {
+    export function pick<T extends SourceType | TappedType>(type: T, predicate: (p: Property) => boolean = () => true): Record<string, Property> {
+        let fields: Record<string, Property> = {};
 
-/**
- * Takes a property P and exchanges its value with what is provided for V.
- */
-// export type ReplacePropertyValue<P extends Property, V> = Omit<P, "value"> & { value: V };
-export type ReplacePropertyValue<P, V> = Omit<P, "value"> & { value: V };
+        for (let k in type) {
+            let candidate = type[k];
 
-/**
- * The keys in T that point to a Property optionally extending P.
- */
-export type PropertyKeys<T, P = Property, A extends boolean = false> = Exclude<({
-    [K in keyof T]: T[K] extends (Property & P) ? A extends true ? AliasOf<T[K]> : K : never;
-})[keyof T], undefined>;
-
-export type KeyOfPropertyAliased<T, A extends string> = { [K in keyof T]: T[K] extends Property & { alias: A } ? K : never; }[keyof T];
-
-export type PropertyAliased<T, A extends string>
-    = T[KeyOfPropertyAliased<T, A>] extends Property ? T[KeyOfPropertyAliased<T, A>] : never;
-
-export function propertiesOf<T extends Type | Selection>(type: T, predicate: (p: Property) => boolean = () => true): Record<string, Property> {
-    let fields: Record<string, Property> = {};
-
-    for (let k in type) {
-        let candidate = type[k];
-
-        if (Property.is(candidate) && predicate(candidate)) {
-            fields[k] = candidate;
+            if (Property.is(candidate) && predicate(candidate)) {
+                fields[k] = candidate;
+            }
         }
+
+        return fields;
     }
 
-    return fields;
-}
+    export type AliasOf<P> = P extends Property ? P["alias"] : never;
 
-export module Property {
+    /**
+     * The aliases of properties in T that optionally extend P.
+     */
+    export type Aliases<T, P = Property> = Exclude<({
+        [K in keyof T]: T[K] extends (Property & P) ? AliasOf<T[K]> : never;
+    })[keyof T], undefined>;
+
+    /**
+     * The keys in T that point to a Property optionally extending P.
+     */
+    export type Keys<T, P = Property, A extends boolean = false> = Exclude<({
+        [K in keyof T]: T[K] extends (Property & P) ? A extends true ? AliasOf<T[K]> : K : never;
+    })[keyof T], undefined>;
+
+    /**
+     * Takes a property P and exchanges its value with what is provided for V.
+     */
+    // export type Property.ReplaceValue<P extends Property, V> = Omit<P, "value"> & { value: V };
+    export type ReplaceValue<P, V> = Omit<P, "value"> & { value: V };
+
+    export type KeyOfAliased<T, A extends string> = { [K in keyof T]: T[K] extends Property & { alias: A } ? K : never; }[keyof T];
+
+    export type Aliased<T, A extends string> = T[KeyOfAliased<T, A>] extends Property ? T[KeyOfAliased<T, A>] : never;
+
     export type Primitive<K extends string = string, V = any, A extends string = K> = Property<K, V, A, true>;
 
     export function isPrimitive(p: any): p is Primitive {
@@ -68,7 +74,7 @@ export module Property {
     export function create(...args: any[]): any {
         let key: string;
         /**
-         * [todo] proper type (Primitive | Type) & arg type validation
+         * [todo] proper type (Primitive | SourceType) & arg type validation
          */
         let value: any;
         let alias: string;

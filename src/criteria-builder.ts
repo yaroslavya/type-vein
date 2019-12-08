@@ -1,12 +1,10 @@
 import { Property } from "./property";
-import { Primitive } from "./lang";
-import { IsFilterable } from "./attribute";
-import { Context, WidenValueForContext } from "./context";
-import { Selection } from "./selection";
+import { Attribute } from "./attribute";
+import { Context } from "./context";
 
 export class CriteraBuilder<T, C extends Context> {
-    equals<P extends Property.Primitive & IsFilterable>(
-        select: (properties: T) => P, value: WidenValueForContext<P, C, ReturnType<P["value"]>>
+    equals<P extends Property.Primitive & Attribute.IsFilterable>(
+        select: (properties: T) => P, value: Context.WidenValue<P, C, ReturnType<P["value"]>>
     ): this;
 
     equals(...args: any[]) {

@@ -1,4 +1,4 @@
-export interface Attributes {
+interface Attributes {
     filterable: true;
     indexable: true;
     iterable: {
@@ -8,34 +8,42 @@ export interface Attributes {
 }
 
 export type Attribute = keyof Attributes;
-export type HasAttribute<A extends Attribute> = Record<A, Attributes[A]>;
 
-export type IsFilterable = HasAttribute<"filterable">;
-export type IsIndexable = HasAttribute<"indexable">;
-export type IsIterable = HasAttribute<"iterable">;
-export type IsUnique = HasAttribute<"unique">;
+export module Attribute {
+    export type Has<A extends Attribute> = Record<A, Attributes[A]>;
 
-const attributesMap: Record<Attribute, true> = {
-    filterable: true,
-    indexable: true,
-    iterable: true,
-    unique: true
-};
+    export type IsFilterable = Has<"filterable">;
+    export type IsIndexable = Has<"indexable">;
+    export type IsIterable = Has<"iterable">;
 
-export function allAttributes(): Attribute[] {
-    return Object.keys(attributesMap) as Attribute[];
-}
+    export module Iterable {
+        export type Value = Attributes["iterable"];
+    }
 
-export function setAttribute<T extends object, A extends Attribute>(property: T, attribute: A, value: Attributes[A]): T & HasAttribute<A> {
-    (property as any)[attribute] = value;
+    export type IsUnique = Has<"unique">;
 
-    return property as any;
-}
+    const attributesMap: Record<Attribute, true> = {
+        filterable: true,
+        indexable: true,
+        iterable: true,
+        unique: true
+    };
 
-export function hasAttribute<A extends Attribute>(property: any, attribute: A): property is HasAttribute<A> {
-    return property?.[attribute] === true;
-}
+    export function all(): Attribute[] {
+        return Object.keys(attributesMap) as Attribute[];
+    }
 
-export function includesAttribute<A extends Attribute>(attributes: string[], attribute: A): attributes is A[] {
-    return attributes.indexOf(attribute) !== -1;
+    export function set<T extends object, A extends Attribute>(property: T, attribute: A, value: Attributes[A]): T & Has<A> {
+        (property as any)[attribute] = value;
+
+        return property as any;
+    }
+
+    export function has<A extends Attribute>(property: any, attribute: A): property is Has<A> {
+        return property?.[attribute] === true;
+    }
+
+    export function includes<A extends Attribute>(attributes: string[], attribute: A): attributes is A[] {
+        return attributes.indexOf(attribute) !== -1;
+    }
 }

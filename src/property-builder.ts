@@ -1,7 +1,7 @@
 import { Property } from "./property";
 import { Primitive } from "./lang";
-import { IsLoadable, ContextValue, IncludesContextValue, IsCreatable, IsPatchable, setContext } from "./context";
-import { IsFilterable, IsIterable, IsUnique, IsIndexable, setAttribute, Attributes } from "./attribute";
+import { Context } from "./context";
+import { Attribute } from "./attribute";
 
 export class PropertyBuilder<K extends string, V, A extends string = K, P extends Property<K, V, A> = Property<K, V, A>> {
     constructor(key: K, value: V, alias: A) {
@@ -16,41 +16,41 @@ export class PropertyBuilder<K extends string, V, A extends string = K, P extend
 
     readonly _property: P;
 
-    filterable(): PropertyBuilder<K, V, A, P & IsFilterable> {
-        setAttribute(this._property, "filterable", true);
+    filterable(): PropertyBuilder<K, V, A, P & Attribute.IsFilterable> {
+        Attribute.set(this._property, "filterable", true);
         return this as any;
     }
 
-    indexable(): PropertyBuilder<K, V, A, P & IsIndexable> {
-        setAttribute(this._property, "indexable", true);
+    indexable(): PropertyBuilder<K, V, A, P & Attribute.IsIndexable> {
+        Attribute.set(this._property, "indexable", true);
         return this as any;
     }
 
-    iterable(args?: Attributes["iterable"]): PropertyBuilder<K, V, A, P & IsIterable> {
-        setAttribute(this._property, "iterable", args || { sorted: false });
+    iterable(args?: Attribute.Iterable.Value): PropertyBuilder<K, V, A, P & Attribute.IsIterable> {
+        Attribute.set(this._property, "iterable", args || { sorted: false });
         return this as any;
     }
 
-    unique(): PropertyBuilder<K, V, A, P & IsUnique> {
-        setAttribute(this._property, "unique", true);
+    unique(): PropertyBuilder<K, V, A, P & Attribute.IsUnique> {
+        Attribute.set(this._property, "unique", true);
         return this as any;
     }
 
-    creatable<F extends (keyof ContextValue)[] = never[]>(flags?: F)
-        : PropertyBuilder<K, V, A, P & IsCreatable<IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
-        setContext(this._property, "creatable", flags);
+    creatable<CTXOK extends (keyof Context.Options)[] = never[]>(optionKeys?: CTXOK)
+        : PropertyBuilder<K, V, A, P & Context.IsCreatable<Context.IncludesOptionsKey<CTXOK, "nullable">, Context.IncludesOptionsKey<CTXOK, "optional">>> {
+        Context.set(this._property, "creatable", optionKeys);
         return this as any;
     }
 
-    loadable<F extends (keyof ContextValue)[] = never[]>(flags?: F)
-        : PropertyBuilder<K, V, A, P & IsLoadable<IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
-        setContext(this._property, "loadable", flags);
+    loadable<CTXOK extends (keyof Context.Options)[] = never[]>(optionKeys?: CTXOK)
+        : PropertyBuilder<K, V, A, P & Context.IsLoadable<Context.IncludesOptionsKey<CTXOK, "nullable">, Context.IncludesOptionsKey<CTXOK, "optional">>> {
+        Context.set(this._property, "loadable", optionKeys);
         return this as any;
     }
 
-    patchable<F extends (keyof ContextValue)[] = never[]>(flags?: F)
-        : PropertyBuilder<K, V, A, P & IsPatchable<IncludesContextValue<F, "nullable">, IncludesContextValue<F, "voidable">>> {
-        setContext(this._property, "patchable", flags);
+    patchable<CTXOK extends (keyof Context.Options)[] = never[]>(optionKeys?: CTXOK)
+        : PropertyBuilder<K, V, A, P & Context.IsPatchable<Context.IncludesOptionsKey<CTXOK, "nullable">, Context.IncludesOptionsKey<CTXOK, "optional">>> {
+        Context.set(this._property, "patchable", optionKeys);
         return this as any;
     }
 

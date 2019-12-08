@@ -1,4 +1,4 @@
-import { TypeSymbol, Type, Property, TypeQuery, Selection, DefaultQuerySelection } from "../../src";
+import { SourceTypeSymbol, SourceType, Property, Query, TappedType, DefaultQuerySelection } from "../../src";
 
 describe("type-query", () => {
     it("should allow for extension by inheritance (while keeping chaining functionality)", () => {
@@ -10,20 +10,20 @@ describe("type-query", () => {
          * [arrange]
          */
         class CoffeeCupType {
-            [TypeSymbol] = Type.createMetadata(CoffeeCupType);
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeCupType);
             label = Property.create("label", String, b => b.loadable(["voidable"]));
             beans = Property.create("beans", CoffeeBeansType, b => b.loadable(["voidable"]));
             volume = Property.create("volume", Number, b => b.loadable(["voidable"]));
         }
 
         class CoffeeBeansType {
-            [TypeSymbol] = Type.createMetadata(CoffeeBeansType);
+            [SourceTypeSymbol] = SourceType.createMetadata(CoffeeBeansType);
             origin = Property.create("origin", String, b => b.loadable(["voidable"]));
             tasty = Property.create("tasty", Boolean, b => b.loadable(["voidable"]));
         }
 
         // [todo] 'extends Selection<CoffeeCupType>' can possibly be removed in the future
-        class CoffeeCupTypeQuery<S extends Selection<CoffeeCupType> = DefaultQuerySelection<CoffeeCupType>> extends TypeQuery<CoffeeCupType, S> {
+        class CoffeeCupTypeQuery<S extends TappedType<CoffeeCupType> = DefaultQuerySelection<CoffeeCupType>> extends Query<CoffeeCupType, S> {
             constructor() {
                 super(new CoffeeCupType());
             }

@@ -1,48 +1,56 @@
-import { Type, Property, InstanceLoader, TypeQuery, Instance, TypeSymbol, SelectionSymbol, Selection, PropertyKeys, Context, HasContext, ChangeContextVoidable } from "../../src";
+import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType } from "../../src";
 
 describe("playground", () => {
     it("playing with instance-loader", () => {
         class AlbumType {
-            [TypeSymbol] = Type.createMetadata(AlbumType);
-            name = Property.create("name", String, b => b.loadable(["voidable"]));
+            [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);
+            name = Property.create("name", String, b => b.loadable(["optional"]));
             releasedAt = Property.create("releasedAt", String, b => b.loadable());
             songs = Property.create("songs", SongType, b => b.loadable().iterable());
-            artist = Property.create("songs", ArtistType, b => b.loadable(["voidable"]).iterable());
+            artist = Property.create("songs", ArtistType, b => b.loadable(["optional"]).iterable());
         }
 
         class ArtistType {
-            [TypeSymbol] = Type.createMetadata(ArtistType);
+            [SourceTypeSymbol] = SourceType.createMetadata(ArtistType);
             name = Property.create("name", String, b => b.loadable());
-            age = Property.create("age", Number, b => b.loadable(["voidable"]));
+            age = Property.create("age", Number, b => b.loadable(["optional"]));
         }
 
         class SongType {
-            [TypeSymbol] = Type.createMetadata(SongType);
-            album = Property.create("album", AlbumType, b => b.loadable(["voidable", "nullable"]));
+            [SourceTypeSymbol] = SourceType.createMetadata(SongType);
+            album = Property.create("album", AlbumType, b => b.loadable(["optional", "nullable"]));
             duration = Property.create("duration", Number, b => b.loadable());
             name = Property.create("name", String, b => b.loadable());
         }
 
+        function foo<F>(x?: any): x is F {
+            return true;
+        }
+
+        let dumdidum = (x?: any): x is string => foo<string>(x) && foo<number>(x);
+
+        let x = TapSourceType.tap(new AlbumType(), Property.isComplex);
+
         let albumTypeInstanceLoader: InstanceLoader<AlbumType> = {
             load(loadable, criteria) {
                 // expected to be false
-                loadable.releasedAt.loadable.voidable;
-                loadable.songs.loadable.voidable;
-                loadable.songs.value.duration.loadable.voidable;
-                loadable.artist?.value.name.loadable.voidable;
+                loadable.releasedAt.loadable.optional;
+                loadable.songs.loadable.optional;
+                loadable.songs.value.duration.loadable.optional;
+                loadable.artist?.value.name.loadable.optional;
 
                 // expected to be boolean
-                loadable.name?.loadable.voidable;
-                loadable.artist?.loadable.voidable;
-                loadable.artist?.value.age?.loadable.voidable;
-                loadable.songs.value.album?.loadable.voidable;
+                loadable.name?.loadable.optional;
+                loadable.artist?.loadable.optional;
+                loadable.artist?.value.age?.loadable.optional;
+                loadable.songs.value.album?.loadable.optional;
 
-                loadable.songs?.value[SelectionSymbol].type[TypeSymbol].class;
+                loadable.songs?.value[TappedTypeSymbol].source[SourceTypeSymbol].class;
 
-                new loadable[SelectionSymbol].type[TypeSymbol].class();
-                let metadata = loadable[SelectionSymbol].type[TypeSymbol].class;
-                loadable[SelectionSymbol].type[TypeSymbol].class;
-                loadable.songs?.value[SelectionSymbol].type;
+                new loadable[TappedTypeSymbol].source[SourceTypeSymbol].class();
+                let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
+                loadable[TappedTypeSymbol].source[SourceTypeSymbol].class;
+                loadable.songs?.value[TappedTypeSymbol].source;
 
                 for (let k in loadable) {
 
@@ -59,7 +67,7 @@ describe("playground", () => {
         let anyTypeInstanceLoader: InstanceLoader<AlbumType | SongType> = {
             load(loadable) {
 
-                let metadata = loadable[SelectionSymbol].type[TypeSymbol];
+                let metadata = loadable[TappedTypeSymbol].source[SourceTypeSymbol];
 
                 if (metadata.class === AlbumType) {
 
@@ -84,20 +92,20 @@ describe("playground", () => {
     it("playing with type-query", () => {
         // arrange
         class AlbumType {
-            [TypeSymbol] = Type.createMetadata(AlbumType);
-            name = Property.create("name", String, b => b.loadable(["voidable"]).filterable().unique());
-            releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "voidable"]).filterable());
-            songs = Property.create("songs", SongType, b => b.loadable(["voidable"]).iterable());
+            [SourceTypeSymbol] = SourceType.createMetadata(AlbumType);
+            name = Property.create("name", String, b => b.loadable(["optional"]).filterable().unique());
+            releasedAt = Property.create("releasedAt", String, b => b.loadable(["nullable", "optional"]).filterable());
+            songs = Property.create("songs", SongType, b => b.loadable(["optional"]).iterable());
         }
 
         class SongType {
-            [TypeSymbol] = Type.createMetadata(SongType);
-            album = Property.create("album", AlbumType, b => b.loadable(["voidable"]));
+            [SourceTypeSymbol] = SourceType.createMetadata(SongType);
+            album = Property.create("album", AlbumType, b => b.loadable(["optional"]));
             duration = Property.create("duration", Number, b => b.loadable(["nullable"]).filterable());
             name = Property.create("name", String, b => b.loadable().filterable());
         }
 
-        let typeQuery = new TypeQuery(new AlbumType());
+        let typeQuery = new Query(new AlbumType());
 
         let selectedType = typeQuery
             .include(s => s
@@ -134,8 +142,8 @@ describe("playground", () => {
     });
 
     it("playing with inheritance on data models", () => {
-        class FileSystemNode implements Type<typeof FileSystemNode> {
-            [TypeSymbol] = Type.createMetadata(FileSystemNode);
+        class FileSystemNode implements SourceType<typeof FileSystemNode> {
+            [SourceTypeSymbol] = SourceType.createMetadata(FileSystemNode);
 
             // common properties
             id = Property.create("id", String, "Id", b => b.loadable()
@@ -157,12 +165,12 @@ describe("playground", () => {
             );
 
             // folder properties
-            children = Property.create("children", FileSystemNode, "Children", b => b.loadable(["voidable"]).iterable()
+            children = Property.create("children", FileSystemNode, "Children", b => b.loadable(["optional"]).iterable()
                 .custom("folder", true as true)
             );
 
             // file properties
-            size = Property.create("size", Number, "FileSizeInBytes", b => b.loadable(["voidable"])
+            size = Property.create("size", Number, "FileSizeInBytes", b => b.loadable(["optional"])
                 .custom("file", true as true)
                 .custom("audio", true as true)
                 .custom("video", true as true)
@@ -171,34 +179,34 @@ describe("playground", () => {
             );
 
             // properties of audio/video files
-            duration = Property.create("duration", Number, "Duration", b => b.loadable(["voidable"])
+            duration = Property.create("duration", Number, "Duration", b => b.loadable(["optional"])
                 .custom("video", true as true)
                 .custom("audio", true as true)
             );
 
             // properties of document files
-            pages = Property.create("pages", Number, "Pages", b => b.loadable(["voidable"])
+            pages = Property.create("pages", Number, "Pages", b => b.loadable(["optional"])
                 .custom("document", true as true)
             );
 
             // properties of image/video files
-            height = Property.create("height", Number, "Height", b => b.loadable(["voidable"])
+            height = Property.create("height", Number, "Height", b => b.loadable(["optional"])
                 .custom("image", true as true)
                 .custom("video", true as true)
             );
 
-            width = Property.create("width", Number, "Width", b => b.loadable(["voidable"])
+            width = Property.create("width", Number, "Width", b => b.loadable(["optional"])
                 .custom("image", true as true)
                 .custom("video", true as true)
             );
         }
 
-        type MakePropertyRequired<P extends HasContext<C>, C extends Context> = P[C]["voidable"] extends true ? ChangeContextVoidable<P, C, false> : P;
+        type MakePropertyRequired<P extends Context.Has<C>, C extends Context> = P[C]["optional"] extends true ? Context.ChangeOptional<P, C, false> : P;
 
-        type MakePropertiesRequired<T extends Type, C extends Context, P = Property>
-            = Selection<T>
+        type MakePropertiesRequired<T extends SourceType, C extends Context, P = Property>
+            = TappedType<T>
             & {
-                [K in PropertyKeys<T, P & HasContext<C>>]: MakePropertyRequired<T[K], C>;
+                [K in Property.Keys<T, P & Context.Has<C>>]: MakePropertyRequired<T[K], C>;
             };
 
         let fileSystemNodeInstance: Instance<FileSystemNode, "loadable"> = {
@@ -248,5 +256,11 @@ describe("playground", () => {
             width: 800,
             size: 1 * 1024 * 1024
         };
+    });
+
+    it("playing with entity-store", () => {
+        class FooType {
+            [SourceTypeSymbol] = SourceType.createMetadata(FooType);
+        }
     });
 });
