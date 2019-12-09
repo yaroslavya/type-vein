@@ -20,13 +20,13 @@ describe("criteria", () => {
                 // arrange
                 let a = Criterion.Equals.create(1);
                 let b = Criterion.Equals.create(2);
-                let expected = Criterion.Equals.create(2);
+                let expected = b;
 
                 // act
                 let actual = Criterion.Equals.reduce(a, b);
 
                 // assert
-                expect(actual).toEqual(expected);
+                expect(actual).toBe(expected);
             });
 
             /**
@@ -49,13 +49,13 @@ describe("criteria", () => {
                 // arrange
                 let a = Criterion.Equals.create(1);
                 let b = Criterion.NotEquals.create(1);
-                let expected = Criterion.NotEquals.create(1);
+                let expected = b;
 
                 // act
                 let actual = Criterion.Equals.reduce(a, b);
 
                 // assert
-                expect(actual).toEqual(expected);
+                expect(actual).toBe(expected);
             });
 
             /**
@@ -78,26 +78,26 @@ describe("criteria", () => {
                 // arrange
                 let a = Criterion.Equals.create(1);
                 let b = Criterion.LessEquals.create(2);
-                let expected = Criterion.LessEquals.create(2);
+                let expected = b;
 
                 // act
                 let actual = Criterion.Equals.reduce(a, b);
 
                 // assert
-                expect(actual).toEqual(expected);
+                expect(actual).toBe(expected);
             });
 
             it("'x == 1' should not reduce 'x <= 0'", () => {
                 // arrange
                 let a = Criterion.Equals.create(1);
                 let b = Criterion.LessEquals.create(0);
-                let expected = Criterion.LessEquals.create(0);
+                let expected = b;
 
                 // act
                 let actual = Criterion.Equals.reduce(a, b);
 
                 // assert
-                expect(actual).toEqual(expected);
+                expect(actual).toBe(expected);
             });
 
             /**
@@ -120,26 +120,26 @@ describe("criteria", () => {
                 // arrange
                 let a = Criterion.Equals.create(1);
                 let b = Criterion.GreaterEquals.create(0);
-                let expected = Criterion.GreaterEquals.create(0);
+                let expected = b;
 
                 // act
                 let actual = Criterion.Equals.reduce(a, b);
 
                 // assert
-                expect(actual).toEqual(expected);
+                expect(actual).toBe(expected);
             });
 
             it("'x == 1' should not reduce 'x >= 2'", () => {
                 // arrange
                 let a = Criterion.Equals.create(1);
                 let b = Criterion.GreaterEquals.create(2);
-                let expected = Criterion.GreaterEquals.create(2);
+                let expected = b;
 
                 // act
                 let actual = Criterion.Equals.reduce(a, b);
 
                 // assert
-                expect(actual).toEqual(expected);
+                expect(actual).toBe(expected);
             });
 
             /**
@@ -171,6 +171,19 @@ describe("criteria", () => {
                 expect(actual).toEqual(expected);
             });
 
+            it("'x == 1' should not reduce 'x in [2, 3]'", () => {
+                // arrange
+                let a = Criterion.Equals.create(1);
+                let b = Criterion.In.create([2, 3]);
+                let expected = b;
+
+                // act
+                let actual = Criterion.Equals.reduce(a, b);
+
+                // assert
+                expect(actual).toBe(expected);
+            });
+
             /**
              * [not-in]
              */
@@ -185,6 +198,19 @@ describe("criteria", () => {
 
                 // assert
                 expect(actual).toEqual(expected);
+            });
+
+            it("'x == 1' should not reduce 'x not in [1, 2]'", () => {
+                // arrange
+                let a = Criterion.Equals.create(1);
+                let b = Criterion.NotIn.create([1, 2]);
+                let expected = b;
+
+                // act
+                let actual = Criterion.Equals.reduce(a, b);
+
+                // assert
+                expect(actual).toBe(expected);
             });
 
             /**
@@ -227,6 +253,19 @@ describe("criteria", () => {
 
                 // assert
                 expect(actual).toEqual(expected);
+            });
+
+            it("'x == 1' should not reduce '>= 2 && <= 3'", () => {
+                // arrange
+                let a = Criterion.Equals.create(1);
+                let b = Criterion.FromTo.create([2, 3]);
+                let expected = b;
+
+                // act
+                let actual = Criterion.Equals.reduce(a, b);
+
+                // assert
+                expect(actual).toBe(expected);
             });
         });
     });

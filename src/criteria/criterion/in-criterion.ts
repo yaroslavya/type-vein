@@ -16,7 +16,15 @@ export module InCriterion {
     export function reduce(a: InCriterion, b: Criterion): Criterion | null {
         switch (b.op) {
             case "==": return a.values.has(b.value) ? null : b;
-            case "!=": return { op: "not-in", values: new Set(a.values).add(b.value) };
+
+            case "!=": {
+                if (a.values.has(b.value) && a.values.size === 1) {
+                    return b;
+                }
+
+                return { op: "not-in", values: new Set(a.values).add(b.value) };
+            }
+
             case "<=": return a.values.has(b.value) ? { op: "<", value: b.value } : b;
             case ">=": return a.values.has(b.value) ? { op: ">", value: b.value } : b;
 
@@ -38,7 +46,15 @@ export module InCriterion {
                 }
             }
 
-            case "not-in": return { op: "not-in", values: new Set([...a.values, ...b.values]) };
+            case "not-in": {
+                for (let value of a.values) {
+                    if (!b.values.has(value)) {
+                        return { op: "not-in", values: new Set([...a.values, ...b.values]) };
+                    }
+                }
+
+                return b;
+            }
 
             case "from-to": {
                 let from = b.from;

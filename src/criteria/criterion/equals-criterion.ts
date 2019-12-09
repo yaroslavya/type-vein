@@ -35,7 +35,7 @@ export module EqualsCriterion {
                     return b;
                 }
 
-            case "not-in": return { op: "not-in", values: new Set([a.value, ...b.values]) };
+            case "not-in": return b.values.has(a.value) ? b : { op: "not-in", values: new Set([...b.values, a.value]) };
 
             case "from-to": {
                 let from = b.from;
