@@ -19,7 +19,6 @@ export type Criterion
     | NotEqualsCriterion
     | NotInCriterion;
 
-
 export module Criterion {
     export import Equals = EqualsCriterion;
     export import FromTo = FromToCriterion;
@@ -30,4 +29,14 @@ export module Criterion {
     export import LessEquals = LessEqualsCriterion;
     export import NotEquals = NotEqualsCriterion;
     export import NotIn = NotInCriterion;
+
+    type Foo = Extract<Criterion, { op: "==" }>;
+
+    export function reducer<OP extends Criterion["op"], A = Extract<Criterion, { op: OP }>>(op: OP): (a: A, b: Criterion) => Criterion | null {
+        switch (op) {
+            case "==": return Equals.reduce as any;
+            case "!=": return NotEquals.reduce as any;
+            default: throw new Error(`no reducer known for operation '${op}'`);
+        }
+    }
 }

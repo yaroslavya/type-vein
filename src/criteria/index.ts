@@ -1,3 +1,3 @@
 export * from "./criterion";
-export * from "./criteria";
+export * from "./instance-criteria";
 export * from "./set-criterion";
