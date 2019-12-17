@@ -1,4 +1,4 @@
-import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType } from "../../src";
+import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion } from "../../src";
 
 describe("playground", () => {
     it("playing with instance-loader", () => {
@@ -263,4 +263,18 @@ describe("playground", () => {
             [SourceTypeSymbol] = SourceType.createMetadata(FooType);
         }
     });
+
+    // fit("playing with criteria", () => {
+    //     let criteriaA = [
+    //         Criterion.Equals.create(2),
+    //         Criterion.Equals.create(3)
+    //     ];
+
+    //     let criteriaB = [
+    //         Criterion.In.create([2, 3])
+    //     ];
+
+    //     // expect(InstanceCriteria.reduceSingleValueCriteria(criteriaA, criteriaB)).toEqual([Criterion.Equals.create(3)]);
+    //     expect(InstanceCriteria.reduceValueCriteria(criteriaA, criteriaB)).toBeNull();
+    // });
 });

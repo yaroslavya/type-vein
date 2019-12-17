@@ -1,19 +1,19 @@
-import { Criterion } from "./criterion";
+import { ValueCriterion } from "./value-criterion";
 
-export interface EqualsCriterion {
+export interface EqualsValueCriterion {
     op: "==";
     value: boolean | number | string | null;
 }
 
-export module EqualsCriterion {
-    export function create<V extends EqualsCriterion["value"]>(value: V): EqualsCriterion {
+export module EqualsValueCriterion {
+    export function create<V extends EqualsValueCriterion["value"]>(value: V): EqualsValueCriterion {
         return { op: "==", value: value };
     }
 
     /**
      * Make b smaller by reducing it by a.
      */
-    export function reduce(a: EqualsCriterion, b: Criterion): Criterion | null {
+    export function reduce(a: EqualsValueCriterion, b: ValueCriterion): ValueCriterion | null {
         switch (b.op) {
             // case "custom": return b.reduceBy(a);
             case "==": return a.value === b.value ? null : b;

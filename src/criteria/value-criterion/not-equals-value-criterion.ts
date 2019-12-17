@@ -1,12 +1,12 @@
-import { Criterion } from "./criterion";
+import { ValueCriterion } from "./value-criterion";
 
-export interface NotEqualsCriterion {
+export interface NotEqualsValueCriterion {
     op: "!=";
     value: boolean | number | string | null;
 }
 
-export module NotEqualsCriterion {
-    export function create<V extends NotEqualsCriterion["value"]>(value: V): NotEqualsCriterion {
+export module NotEqualsValueCriterion {
+    export function create<V extends NotEqualsValueCriterion["value"]>(value: V): NotEqualsValueCriterion {
         return { op: "!=", value: value };
     }
 
@@ -14,7 +14,7 @@ export module NotEqualsCriterion {
      * [todo] unfinished - will do later since it is one of the less
      * important criteria.
      */
-    export function reduce(a: NotEqualsCriterion, b: Criterion): Criterion | null {
+    export function reduce(a: NotEqualsValueCriterion, b: ValueCriterion): ValueCriterion | null {
         switch (b.op) {
             case "!=": return a.value === b.value ? null : b;
             case "==": return a.value === b.value ? b : null;

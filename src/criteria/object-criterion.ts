@@ -1,14 +1,14 @@
-import { Criterion } from "./criterion";
-import { SetCriterion } from "./set-criterion";
+import { ValueCriterion } from "./value-criterion";
+import { ValuesCriterion } from "./values-criterion";
 import { Property } from "../property";
 import { Primitive, Unbox } from "../lang";
 import { Attribute } from "../attribute";
 
 export type PropertyCriterion
-    = Criterion | SetCriterion | InstanceCriteria;
+    = ValueCriterion | ValuesCriterion | ObjectCriterion;
 
 export type PropertyCriteria
-    = Criterion[] | SetCriterion[] | InstanceCriteria[];
+    = ValueCriterion[] | ValuesCriterion[] | ObjectCriterion[];
 
 export module PropertyCriterion {
     export function areSameType<A extends PropertyCriterion>(a: A, b: any): b is A {
@@ -24,20 +24,20 @@ export module PropertyCriterion {
     }
 }
 
-export interface InstanceCriteria {
-    [k: string]: Criterion[] | SetCriterion[] | InstanceCriteria[];
+export interface ObjectCriterion {
+    [k: string]: ValueCriterion[] | ValuesCriterion[] | ObjectCriterion[];
 }
 
-export module InstanceCriteria {
+export module ObjectCriterion {
     export type ForType<T> = {
         [K in Property.Keys<T>]?
-        : T[K] extends Property & { value: Primitive; } & Attribute.IsIterable ? SetCriterion[]
-        : T[K] extends Property & { value: Primitive; } ? Criterion[]
-        : T[K] extends Property ? InstanceCriteria.ForType<Unbox<T[K]["value"]>>[]
+        : T[K] extends Property & { value: Primitive; } & Attribute.IsIterable ? ValuesCriterion[]
+        : T[K] extends Property & { value: Primitive; } ? ValueCriterion[]
+        : T[K] extends Property ? ObjectCriterion.ForType<Unbox<T[K]["value"]>>[]
         : never;
     };
 
-    export function reduce(a: InstanceCriteria, b: InstanceCriteria): InstanceCriteria | null {
+    export function reduce(a: ObjectCriterion, b: ObjectCriterion): ObjectCriterion | null {
         // if [a] has more criteria than [b] we can just return [b]
         if (Object.keys(a).length > Object.keys(b).length) {
             return b;

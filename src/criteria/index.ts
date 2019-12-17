@@ -1,3 +1,3 @@
-export * from "./criterion";
-export * from "./instance-criteria";
-export * from "./set-criterion";
+export * from "./object-criterion";
+export * from "./value-criterion";
+export * from "./values-criterion";

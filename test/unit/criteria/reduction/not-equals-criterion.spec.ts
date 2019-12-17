@@ -1,16 +1,16 @@
-import { Criterion } from "../../../../src";
+import { ValueCriterion } from "../../../../src";
 
 describe("criteria", () => {
     describe("reduction", () => {
         describe("not-equals", () => {
             it("'x != 1' should completely reduce itself", () => {
                 // arrange
-                let a = Criterion.NotEquals.create(1);
-                let b = Criterion.NotEquals.create(1);
+                let a = ValueCriterion.NotEquals.create(1);
+                let b = ValueCriterion.NotEquals.create(1);
                 let expected = null;
 
                 // act
-                let actual = Criterion.NotEquals.reduce(a, b);
+                let actual = ValueCriterion.NotEquals.reduce(a, b);
 
                 // assert
                 expect(actual).toEqual(expected);
@@ -18,12 +18,12 @@ describe("criteria", () => {
 
             it("'x != 1' should completely reduce 'x == 2'", () => {
                 // arrange
-                let a = Criterion.NotEquals.create(1);
-                let b = Criterion.Equals.create(2);
+                let a = ValueCriterion.NotEquals.create(1);
+                let b = ValueCriterion.Equals.create(2);
                 let expected = null;
 
                 // act
-                let actual = Criterion.NotEquals.reduce(a, b);
+                let actual = ValueCriterion.NotEquals.reduce(a, b);
 
                 // assert
                 expect(actual).toEqual(expected);

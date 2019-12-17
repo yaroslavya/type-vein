@@ -1,19 +1,19 @@
-import { Criterion } from "./criterion";
+import { ValueCriterion } from "./value-criterion";
 
-export interface InCriterion {
+export interface InValueCriterion {
     op: "in";
     values: Set<boolean | number | string | null>;
 }
 
-export module InCriterion {
-    export function create<V extends boolean | number | string | null>(values: Iterable<V>): InCriterion {
+export module InValueCriterion {
+    export function create<V extends boolean | number | string | null>(values: Iterable<V>): InValueCriterion {
         return { op: "in", values: new Set(values) };
     }
 
     /**
      * Make b smaller by reducing it by a.
      */
-    export function reduce(a: InCriterion, b: Criterion): Criterion | null {
+    export function reduce(a: InValueCriterion, b: ValueCriterion): ValueCriterion | null {
         switch (b.op) {
             case "==": return a.values.has(b.value) ? null : b;
 
