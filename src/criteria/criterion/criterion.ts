@@ -8,6 +8,7 @@ import { GreaterCriterion } from "./greater-criterion";
 import { InCriterion } from "./in-criterion";
 import { FromToCriterion } from "./from-to-criterion";
 
+// [todo] rename to "SingleValueCriterion" cause just "Criterion" is confusing, sounds like its a Union of "(SingleValue)Criterion" and "SetCriterion" and "InstanceCriteria"
 export type Criterion
     = EqualsCriterion
     | FromToCriterion
@@ -30,13 +31,32 @@ export module Criterion {
     export import NotEquals = NotEqualsCriterion;
     export import NotIn = NotInCriterion;
 
-    type Foo = Extract<Criterion, { op: "==" }>;
+    const operations: Record<Criterion["op"], true> = {
+        "!=": true, "<": true, "<=": true, "==": true, ">": true, ">=": true, "from-to": true, "not-in": true, in: true
+    };
 
-    export function reducer<OP extends Criterion["op"], A = Extract<Criterion, { op: OP }>>(op: OP): (a: A, b: Criterion) => Criterion | null {
+    const operationsSet = new Set(Object.keys(operations));
+
+    export function reduce(a: Criterion, b: Criterion): Criterion | null {
+        return reducer(a.op)(a, b);
+    }
+
+    export function reducer<OP extends Criterion["op"]>(op: OP): (a: Extract<Criterion, { op: OP }>, b: Criterion) => Criterion | null {
         switch (op) {
             case "==": return Equals.reduce as any;
             case "!=": return NotEquals.reduce as any;
+            case "<=":
+            case "<":
+            case ">=":
+            case ">":
+            case "in":
+            case "not-in":
+            case "from-to":
             default: throw new Error(`no reducer known for operation '${op}'`);
         }
+    }
+
+    export function is(x?: any): x is Criterion {
+        return operationsSet.has(x?.op);
     }
 }

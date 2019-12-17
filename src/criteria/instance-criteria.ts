@@ -4,6 +4,26 @@ import { Property } from "../property";
 import { Primitive, Unbox } from "../lang";
 import { Attribute } from "../attribute";
 
+export type PropertyCriterion
+    = Criterion | SetCriterion | InstanceCriteria;
+
+export type PropertyCriteria
+    = Criterion[] | SetCriterion[] | InstanceCriteria[];
+
+export module PropertyCriterion {
+    export function areSameType<A extends PropertyCriterion>(a: A, b: any): b is A {
+        if (typeof (a.op) === "string") {
+            if (typeof (b.op) === "string") {
+                return a.op === b.op;
+            } else {
+                return false;
+            }
+        } else {
+            return typeof (b.op) !== "string";
+        }
+    }
+}
+
 export interface InstanceCriteria {
     [k: string]: Criterion[] | SetCriterion[] | InstanceCriteria[];
 }
@@ -22,7 +42,7 @@ export module InstanceCriteria {
         if (Object.keys(a).length > Object.keys(b).length) {
             return b;
         }
-
+        
         // if [a] has criteria on properties not found in [b] we can just return [b]
         for (let k in a) {
             if (b[k] === void 0) {
