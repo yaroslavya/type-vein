@@ -1,12 +1,39 @@
 let npmCommand = process.env.npm_lifecycle_event;
-
 let browsers = ["ChromeHeadless"];
+let reporters = ["mocha"];
+let withCoverage = true;
 
 if (npmCommand.includes(":watch")) {
     browsers = ["Chrome"];
+    reporters.push("coverage-istanbul");
+}
+
+if (npmCommand.includes(":debug")) {
+    browsers = ["Chrome"];
+    withCoverage = false;
 }
 
 module.exports = function (config) {
+    let webpackModuleRules = [
+        {
+            test: /\.ts$/,
+            loader: "ts-loader",
+            options: {
+                configFile: "tsconfig-test.json"
+            }
+        }
+    ];
+
+    if (withCoverage) {
+        webpackModuleRules.push({
+            enforce: "post",
+            test: /\.ts$/,
+            loader: "istanbul-instrumenter-loader",
+            include: /src/,
+            exclude: /\.spec\.ts$/
+        });
+    }
+    
     config.set({
         frameworks: ["jasmine"],
         browsers: browsers,
@@ -22,25 +49,10 @@ module.exports = function (config) {
                 extensions: [".ts", ".tsx", ".js"]
             },
             module: {
-                rules: [
-                    {
-                        test: /\.ts$/,
-                        loader: "ts-loader",
-                        options: {
-                            configFile: "tsconfig-test.json"
-                        }
-                    },
-                    {
-                        enforce: "post",
-                        test: /\.ts$/,
-                        loader: "istanbul-instrumenter-loader",
-                        include: /src/,
-                        exclude: /\.spec\.ts$/
-                    }
-                ]
+                rules: webpackModuleRules
             }
         },
-        reporters: ["mocha", "coverage-istanbul"],
+        reporters,
         mochaReporter: {
             ignoreSkipped: true
         },

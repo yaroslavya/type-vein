@@ -38,7 +38,7 @@ export module InValueCriterion {
                 }
 
                 if (copy.size === 0) {
-                    return null
+                    return null;
                 } else if (copy.size === 1) {
                     return { op: "==", value: copy.values().next().value };
                 } else {
