@@ -1,13 +1,13 @@
 import { SourceType } from "./source-type";
 import { Instance } from "./instance";
-import { InstanceCriteria } from "./criteria";
+import { ObjectCriterion } from "./criteria";
 import { Context } from "./context";
 import { TappedType } from "./tapped-type";
 import { Property } from "./property";
 import { Primitive, Unbox } from "./lang";
 
 export interface InstanceLoader<T extends SourceType> {
-    load(loadable: InstanceLoader.Loadable<T, "loadable">, criteria: InstanceCriteria.ForType<T>[]): Map<string | number, Instance<T, "loadable">>;
+    load(loadable: InstanceLoader.Loadable<T, "loadable">, criteria: ObjectCriterion.ForType<T>[]): Map<string | number, Instance<T, "loadable">>;
 }
 
 export module InstanceLoader {

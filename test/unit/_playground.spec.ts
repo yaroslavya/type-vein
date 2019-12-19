@@ -1,4 +1,4 @@
-import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion } from "../../src";
+import { SourceType, Property, InstanceLoader, Query, Instance, SourceTypeSymbol, TappedTypeSymbol, TappedType, Context, TapSourceType, ObjectCriterion, ValueCriterion, ValueCriteria } from "../../src";
 
 describe("playground", () => {
     it("playing with instance-loader", () => {
@@ -264,17 +264,17 @@ describe("playground", () => {
         }
     });
 
-    // fit("playing with criteria", () => {
-    //     let criteriaA = [
-    //         Criterion.Equals.create(2),
-    //         Criterion.Equals.create(3)
-    //     ];
+    it("playing with criteria", () => {
+        let criteriaA = [
+            ValueCriterion.Equals.create(2),
+            ValueCriterion.Equals.create(3)
+        ];
 
-    //     let criteriaB = [
-    //         Criterion.In.create([2, 3])
-    //     ];
+        let criteriaB = [
+            ValueCriterion.In.create([2, 3])
+        ];
 
-    //     // expect(InstanceCriteria.reduceSingleValueCriteria(criteriaA, criteriaB)).toEqual([Criterion.Equals.create(3)]);
-    //     expect(InstanceCriteria.reduceValueCriteria(criteriaA, criteriaB)).toBeNull();
-    // });
+        // expect(InstanceCriteria.reduceSingleValueCriteria(criteriaA, criteriaB)).toEqual([Criterion.Equals.create(3)]);
+        expect(ValueCriteria.reduce(criteriaA, criteriaB)).toBeNull();
+    });
 });

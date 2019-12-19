@@ -49,7 +49,7 @@ export module ValueCriterion {
             case "<":
             case ">=":
             case ">":
-            case "in":
+            case "in": return In.reduce as any;
             case "not-in":
             case "from-to":
             default: throw new Error(`no reducer known for operation '${op}'`);
