@@ -1,6 +1,6 @@
 import { Attribute } from "../../src";
 
-describe("attribute.ts", () => {
+describe("attribute", () => {
     it("allAttributes() should contain all the attributes shipped with type-vein", () => {
         let expected: Attribute[] = ["filterable", "indexable", "iterable", "unique"];
         let actual = Attribute.all();
