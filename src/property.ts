@@ -3,6 +3,12 @@ import { SourceType } from "./source-type";
 import { TappedType } from "./tapped-type";
 import { PropertyBuilder } from "./property-builder";
 
+/**
+ * [todo] i no longer remember why i added the P (boolean indicating if value V is a primitive) generic type.
+ * ideally we can get rid of it cause it looks a bit weird.
+ * 
+ * on the other hand it is useful for quick runtime checking, since we don't have to check value against [Boolean, Number, String].
+ */
 export interface Property<K extends string = string, V = any, A extends string = K, P = V extends Primitive ? true : false> {
     alias: A;
     key: K;
