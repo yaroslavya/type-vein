@@ -34,6 +34,27 @@ export function runObjectCriterionCases(): void {
     );
 
     /**
+     * [todo] this should actually reduce to { foo == 2, bar != 3 }
+     * [A] is a subset of [B]
+     */
+    {
+        expectObjectCriterionReduction(
+            "{ foo == 2, bar == 3 } should reduce { foo == 2 } to { foo == 2, bar != 3 }",
+            {
+                foo: [ValueCriterion.Equals.create(2)],
+                bar: [ValueCriterion.Equals.create(3)]
+            },
+            {
+                foo: [ValueCriterion.Equals.create(2)]
+            },
+            {
+                foo: [ValueCriterion.Equals.create(2)],
+                bar: [ValueCriterion.NotEquals.create(3)]
+            }
+        );
+    }
+
+    /**
      * [A] doesn't intersect with [B]
      */
     expectObjectCriterionReduction(
@@ -62,24 +83,6 @@ export function runObjectCriterionCases(): void {
         },
         "no-change"
     );
-
-    /**
-     * [todo] this should actually reduce to { foo == 2, bar != 3 }
-     * [A] is a subset of [B]
-     */
-    {
-        expectObjectCriterionReduction(
-            "{ foo == 2, bar == 3 } should not reduce { foo == 2 }",
-            {
-                foo: [ValueCriterion.Equals.create(2)],
-                bar: [ValueCriterion.Equals.create(3)]
-            },
-            {
-                foo: [ValueCriterion.Equals.create(2)]
-            },
-            "no-change"
-        );
-    }
 
     /**
      * [A] removes intersection with [B]

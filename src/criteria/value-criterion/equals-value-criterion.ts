@@ -1,4 +1,5 @@
 import { ValueCriterion } from "./value-criterion";
+import { NotEqualsValueCriterion } from "./not-equals-value-criterion";
 
 export interface EqualsValueCriterion {
     op: "==";
@@ -58,5 +59,9 @@ export module EqualsValueCriterion {
 
             default: return b;
         }
+    }
+
+    export function invert(criterion: EqualsValueCriterion): NotEqualsValueCriterion {
+        return { op: "!=", value: criterion.value };
     }
 }

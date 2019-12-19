@@ -37,6 +37,10 @@ export module ValueCriterion {
 
     const operationsSet = new Set(Object.keys(operations));
 
+    export function is(x?: any): x is ValueCriterion {
+        return operationsSet.has(x?.op);
+    }
+
     export function reduce(a: ValueCriterion, b: ValueCriterion): ValueCriterion | null {
         return reducer(a.op)(a, b);
     }
@@ -52,11 +56,18 @@ export module ValueCriterion {
             case "in": return In.reduce as any;
             case "not-in":
             case "from-to":
-            default: throw new Error(`no reducer known for operation '${op}'`);
+            default: throw new Error(`no reducer available for operation '${op}'`);
         }
     }
 
-    export function is(x?: any): x is ValueCriterion {
-        return operationsSet.has(x?.op);
+    export function invert(criterion: ValueCriterion) : ValueCriterion {
+        return inverter(criterion.op)(criterion);
+    }
+    
+    export function inverter<OP extends ValueCriterion["op"]>(op: OP) : (a: Extract<ValueCriterion, { op: OP }>) => ValueCriterion {
+        switch(op) {
+            case "==": return Equals.invert as any;
+            default: throw new Error(`no inverter available for operation '${op}'`);
+        }
     }
 }

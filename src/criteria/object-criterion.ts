@@ -44,14 +44,19 @@ export module ObjectCriterion {
     export function reduce(a: ObjectCriterion, b: ObjectCriterion): ObjectCriterion | null {
         // if [a] has more criteria than [b] we can just return [b]
         if (Object.keys(a).length > Object.keys(b).length) {
-            return b;
+            // return b;
         }
 
         let reducedPropertyCriteria: { key: string; reduced: ObjectCriterion.PropertyCriteria; } | undefined;
 
         for (let key in a) {
-            let criteriaA = a[key];
             let criteriaB = b[key];
+
+            if(criteriaB === void 0) {
+                continue;
+            }
+
+            let criteriaA = a[key];
             let reduced: ObjectCriterion.PropertyCriteria | null;
 
             if (ValueCriteria.is(criteriaA)) {
@@ -72,7 +77,35 @@ export module ObjectCriterion {
         }
 
         if (reducedPropertyCriteria === void 0) {
-            return null;
+            let numCriteriaA = Object.keys(a).length;
+            let numCriteriaB = Object.keys(b).length;
+
+            if (numCriteriaA == numCriteriaB + 1) {
+                for (let key in a) {
+                    let criteriaA = a[key];
+                    let criteriaB = b[key];
+
+                    if (criteriaB !== void 0) {
+                        continue;
+                    }
+
+                    if (!ValueCriteria.is(criteriaA) || criteriaA.length > 1) {
+                        throw new Error("currently only ValueCriteria with one element are supported for inversion");
+                    }
+
+                    return {
+                        ...b,
+                        [key]: [ValueCriterion.invert(criteriaA[0])]
+                    };
+                }
+
+                return b;
+            } else if (numCriteriaA > numCriteriaB) {
+                // [todo] support this if possibru
+                return b;
+            } else {
+                return null;
+            }
         } else {
             return {
                 ...b,
