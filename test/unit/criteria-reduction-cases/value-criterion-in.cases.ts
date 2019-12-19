@@ -1,7 +1,7 @@
 import { ValueCriterion } from "../../../src";
 import { expectValueCriterionReduction } from "./utils";
 
-export function runValueCriterionInOperatorCases(): void {
+export function runValueCriterionCases_In(): void {
     expectValueCriterionReduction(
         "'x in [1, 2]' should completely reduce itself",
         ValueCriterion.In.create([1, 2]),

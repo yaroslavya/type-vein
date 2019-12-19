@@ -1,7 +1,7 @@
 import { ValueCriterion } from "../../../src";
 import { expectValueCriterionReduction } from "./utils";
 
-export function runValueCriterionEqualsOperatorReductionCases() : void {
+export function runValueCriterionCases_Equals() : void {
     expectValueCriterionReduction(
         "'x == 1' should completely reduce itself",
         ValueCriterion.Equals.create(1),
