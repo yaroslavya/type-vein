@@ -1,7 +1,7 @@
-import { ValueCriteria, ValueCriterion } from "../../../src";
+import { ValueCriteria, ValueCriterion, ObjectCriterion } from "../../../src";
 
 export function expectValueCriteriaReduction(description: string, a: ValueCriteria, b: ValueCriteria, expected: ReturnType<typeof ValueCriteria.reduce> | "no-change"): void {
-    let expectation = expect(ValueCriteria.reduce(a, b)).withContext(description)
+    let expectation = expect(ValueCriteria.reduce(a, b)).withContext(description);
 
     if (expected === "no-change") {
         expectation.toBe(b);
@@ -11,7 +11,7 @@ export function expectValueCriteriaReduction(description: string, a: ValueCriter
 }
 
 export function expectValueCriterionReduction(description: string, a: ValueCriterion, b: ValueCriterion, expected: ReturnType<typeof ValueCriterion.reduce> | "no-change"): void {
-    let expectation = expect(ValueCriterion.reduce(a, b)).withContext(description)
+    let expectation = expect(ValueCriterion.reduce(a, b)).withContext(description);
 
     if (expected === "no-change") {
         expectation.toBe(b);
@@ -20,3 +20,12 @@ export function expectValueCriterionReduction(description: string, a: ValueCrite
     }
 }
 
+export function expectObjectCriterionReduction(description: string, a: ObjectCriterion, b: ObjectCriterion, expected: ReturnType<typeof ObjectCriterion.reduce> | "no-change"): void {
+    let expectation = expect(ObjectCriterion.reduce(a, b)).withContext(description);
+
+    if (expected === "no-change") {
+        expectation.toBe(b);
+    } else {
+        expectation.toEqual(expected);
+    }
+}

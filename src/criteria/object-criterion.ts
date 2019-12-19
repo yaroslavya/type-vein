@@ -25,12 +25,14 @@ export module PropertyCriterion {
 }
 
 export interface ObjectCriterion {
-    [k: string]: ValueCriteria | ValuesCriteria | ObjectCriteria;
+    [k: string]: ObjectCriterion.PropertyCriteria;
 }
 
 export type ObjectCriteria = ObjectCriterion[];
 
 export module ObjectCriterion {
+    export type PropertyCriteria = ValueCriteria | ValuesCriteria | ObjectCriteria;
+
     export type ForType<T> = {
         [K in Property.Keys<T>]?
         : T[K] extends Property & { value: Primitive; } & Attribute.IsIterable ? ValuesCriterion[]
@@ -45,45 +47,37 @@ export module ObjectCriterion {
             return b;
         }
 
-        let reducedValueCriteria : Record<string, ValueCriteria> = {};
-        let valueCriteriaA = ValueCriteria.pick(a);
-        let valueCriteriab = ValueCriteria.pick(b);
+        let reducedPropertyCriteria: { key: string; reduced: ObjectCriterion.PropertyCriteria; } | undefined;
 
-        let foo = reduceValueCriteria(ValueCriteria.pick(a), ValueCriteria.pick(b));
+        for (let key in a) {
+            let criteriaA = a[key];
+            let criteriaB = b[key];
+            let reduced: ObjectCriterion.PropertyCriteria | null;
 
-        // if [a] has criteria on properties not found in [b] we can just return [b]
-        for (let k in a) {
-            if (b[k] === void 0) {
+            if (ValueCriteria.is(criteriaA)) {
+                if (ValueCriteria.is(criteriaB)) {
+                    reduced = ValueCriteria.reduce(criteriaA, criteriaB);
+                } else {
+                    throw new Error("trying to reduce two criteria of different types");
+                }
+            } else {
+                throw new Error("currently only ValueCriteria are supported @ ObjectCriterion.reduce()");
+            }
+
+            if (reduced === criteriaB || (reduced !== null && reducedPropertyCriteria !== void 0)) {
                 return b;
+            } else if (reduced !== null && reducedPropertyCriteria === void 0) {
+                reducedPropertyCriteria = { key, reduced };
             }
         }
 
-        // otherwise, start reducing each criterion on a property
-        for (let k in a) {
-            // [todo] implement
+        if (reducedPropertyCriteria === void 0) {
+            return null;
+        } else {
+            return {
+                ...b,
+                [reducedPropertyCriteria.key]: reducedPropertyCriteria.reduced
+            };
         }
-
-        return null;
-    }
-
-    export function reduceValueCriteria(a: Record<string, ValueCriteria>, b: Record<string, ValueCriteria>): Record<string, ValueCriteria> | null {
-        let reduced: Record<string, ValueCriteria> = {};
-        let didReduce = false;
-
-        for (let k in a) {
-            let reducedValueCriteria = ValueCriteria.reduce(a[k], b[k]);
-
-            if (reducedValueCriteria !== null) {
-                reduced[k] = reducedValueCriteria;
-            }
-
-            if (reducedValueCriteria !== b[k] && !didReduce) {
-                didReduce = true;
-            }
-        }
-
-        return didReduce
-            ? Object.keys(reduced).length > 0 ? reduced : null
-            : b;
     }
 }
